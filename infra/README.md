@@ -1,0 +1,2 @@
+# Infrastructure
+Infrastructure configuration placeholder.
