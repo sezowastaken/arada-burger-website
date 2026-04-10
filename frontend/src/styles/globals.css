@@ -36,14 +36,9 @@ body::before {
 
 /* Checkerboard Divider */
 .checkerboard {
-  height: 0.7rem;
-  background-image: conic-gradient(
-    var(--on-surface) 90deg,
-    var(--background) 90deg 180deg,
-    var(--on-surface) 180deg 270deg,
-    var(--background) 270deg
-  );
-  background-size: 0.7rem 0.7rem;
+  /* Red/Cream pattern with large, thick tiles */
+  background-image: conic-gradient(#B20000 90deg, #FFFBF0 90deg 180deg, #B20000 180deg 270deg, #FFFBF0 270deg);
+  background-size: 100px 100px; /* Thicker pattern */
 }
 
 .sticker-shadow {
