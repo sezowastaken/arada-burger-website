@@ -21,12 +21,23 @@ export default function CategoryFilter({
   title,
 }: CategoryFilterProps) {
   return (
-    <div className="w-full static bg-background border-r-4 border-dashed border-on_surface/20 p-6 rounded-xl">
-      <h3 className="font-display font-black text-2xl uppercase mb-8 text-on_surface tracking-widest border-b-4 border-primary pb-2 inline-block">
+    <div className="w-full rounded-[1.75rem] border-4 border-dashed border-on_surface/15 
+    bg-background/95 p-5 shadow-[6px_6px_20px_rgba(30,28,16,0.08)] backdrop-blur-sm xl:p-6">
+      {/* 
+        ISLAND BOYUTUNU KÜÇÜLTMEK:
+        - p-5 / xl:p-6 => iç boşluk
+        - rounded-[1.75rem] => köşe yuvarlaklığı
+      */}
+      <h3 className="mb-6 inline-block border-b-4 border-primary pb-2 font-display 
+      text-xl font-black uppercase tracking-widest text-on_surface xl:mb-7 xl:text-2xl">
         {title}
       </h3>
 
-      <ul className="flex flex-col gap-4">
+      {/* 
+        BUTONLAR ARASI MESAFE:
+        - gap-3 / xl:gap-4
+      */}
+      <ul className="flex flex-col gap-3 xl:gap-4">
         {categories.map((category) => {
           const isActive = activeCategory === category.id;
 
@@ -35,11 +46,11 @@ export default function CategoryFilter({
               <button
                 type="button"
                 onClick={() => onCategoryClick(category.id)}
-                className={`w-full text-left font-display font-bold text-lg uppercase tracking-wide py-4 px-6 transition-all rounded-xl border-2 ${
-                  isActive
-                    ? "bg-primary text-white border-primary translate-x-2 sticker-shadow"
-                    : "bg-surface_container_highest text-on_surface border-primary/10 hover:border-primary hover:translate-x-1"
-                }`}
+                className={`w-full rounded-[1.5rem] border-2 px-5 py-3 text-left font-display text-base 
+                  font-bold uppercase tracking-wide transition-all xl:px-6 xl:py-4 xl:text-md ${isActive
+                    ? "translate-x-2 border-primary bg-primary text-white sticker-shadow"
+                    : "border-primary/10 bg-surface_container_highest text-on_surface hover:translate-x-1 hover:border-primary"
+                  }`}
               >
                 {category.label}
               </button>

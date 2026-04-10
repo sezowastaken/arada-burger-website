@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import CategoryFilter from "@/components/ui/CategoryFilter";
 import ProductCard from "@/components/ui/ProductCard";
@@ -22,107 +22,201 @@ interface MenuCategory {
 interface MenuClientProps {
   categories: MenuCategory[];
   filterTitle: string;
+  allLabel: string;
 }
 
-export default function MenuClient({ categories, filterTitle }: MenuClientProps) {
-  const [activeCategory, setActiveCategory] = useState<string>(categories[0]?.id || "");
+export default function MenuClient({
+  categories,
+  filterTitle,
+  allLabel,
+}: MenuClientProps) {
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+
+  /**
+   * CONTENT ANCHOR
+   * -------------------------------------------------------------
+   * Kategori değişince ekranı sayfanın en tepesine değil,
+   * sağ içerik alanının başlangıcına yakın güvenli bir noktaya getiriyoruz.
+   *
+   * Offset'i değiştirerek kullanıcının göreceği "kadrajı" ayarlayabilirsin.
+   * - offset büyürse daha aşağıdan başlar
+   * - offset küçülürse daha yukarıdan başlar
+   */
+  const contentTopRef = useRef<HTMLDivElement | null>(null);
+
+  const filterCategories = useMemo(
+    () => [
+      { id: "all", label: allLabel },
+      ...categories.map((category) => ({
+        id: category.id,
+        label: category.name,
+      })),
+    ],
+    [categories, allLabel]
+  );
+
+  const visibleCategories = useMemo(() => {
+    if (activeCategory === "all") return categories;
+    return categories.filter((category) => category.id === activeCategory);
+  }, [activeCategory, categories]);
+
+  const scrollToContentStart = () => {
+    if (!contentTopRef.current) return;
+
+    /**
+     * SCROLL OFFSET GUIDE
+     * -------------------------------------------------------------
+     * Bu değer sabit header + biraz nefes alanı için düşülüyor.
+     * İstersen 140 / 150 / 160 gibi değerler deneyebilirsin.
+     */
+    const offset = 145;
+    const rect = contentTopRef.current.getBoundingClientRect();
+    const targetY = rect.top + window.scrollY - offset;
+
+    window.scrollTo({
+      top: Math.max(0, targetY),
+      behavior: "smooth",
+    });
+  };
 
   const handleCategoryClick = (id: string) => {
     setActiveCategory(id);
 
-    const element = document.getElementById(id);
-    if (element) {
-      const yOffset = -120;
-      const y = element.getBoundingClientRect().top + window.scrollY + yOffset;
-      window.scrollTo({ top: y, behavior: "smooth" });
-    }
+    /**
+     * FILTER + SCROLL SYNC
+     * -------------------------------------------------------------
+     * Önce state güncellensin, DOM yeni kategoriye göre render olsun,
+     * sonra scroll çalışsın diye iki kat requestAnimationFrame kullanıyoruz.
+     */
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        scrollToContentStart();
+      });
+    });
   };
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const categoryElements = categories.map((cat) => document.getElementById(cat.id));
-      let currentActive = activeCategory;
-
-      for (const el of categoryElements) {
-        if (!el) continue;
-
-        const rect = el.getBoundingClientRect();
-        if (rect.top <= 250 && rect.bottom >= 250) {
-          currentActive = el.id;
-        }
-      }
-
-      if (currentActive !== activeCategory) {
-        setActiveCategory(currentActive);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [activeCategory, categories]);
-
-  const filterCategories = categories.map((c) => ({
-    id: c.id,
-    label: c.name,
-  }));
-
   return (
-    <div className="container mx-auto px-4 py-8 md:py-16 relative z-10 w-full max-w-[1600px]">
-      <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-start">
-        {/* Sidebar Wrapper - Explicit Non-Sticky */}
-        <div className="w-full lg:w-1/5 xl:w-[15%] hidden lg:block static relative self-auto z-20">
-          <CategoryFilter
-            categories={filterCategories}
-            activeCategory={activeCategory}
-            onCategoryClick={handleCategoryClick}
-            title={filterTitle}
-          />
+    <div className="relative z-10 mx-auto w-full max-w-[1500px] px-6 py-10 md:px-8 md:py-16 xl:px-12">
+      {/* =========================================================
+          MENU PAGE LAYOUT GUIDE
+          ---------------------------------------------------------
+          1) SAYFAYI TOPTAN DAHA FERAH / DAHA DAR YAPMAK:
+             - max-w-[1500px] => tüm layout genişliği
+             - küçültürsen daha fazla sağ/sol boşluk oluşur
 
-          {/* Sol taraftaki maskot */}
-          <div className="absolute -left-12 xl:-left-24 top-[60vh] w-40 h-40 md:w-64 md:h-64 transition-transform duration-300 ease-in-out hover:scale-110 hover:rotate-3 opacity-90 z-30 pointer-events-auto">
-            <Image
-              src="/brand/mascots/soda_maskot.png"
-              alt="Soda Mascot"
-              width={300}
-              height={300}
-              className="w-full h-auto drop-shadow-xl"
+          2) SAĞ / SOL KENAR BOŞLUKLARI:
+             - px-6 / md:px-8 / xl:px-12 => dış yatay boşluk
+             - bunları artırırsan içerik kenarlardan uzaklaşır
+
+          3) SIDEBAR VE ÜRÜN ALANI ARASI MESAFE:
+             - lg:gap-16 / xl:gap-24
+             - bunu artırırsan island ile kartlar birbirinden uzaklaşır
+
+          4) SIDEBAR BOYUTU:
+             - lg:w-[220px] / xl:w-[240px]
+             - küçültürsen filtre island daha kompakt olur
+
+          5) SAĞDAKİ KART ALANINI TOPTAN DARALTMAK:
+             - max-w-[1080px]
+             - küçültürsen kartların bulunduğu toplam alan daralır
+
+          6) STICKY ISLAND:
+             - sticky top-32
+             - top değerini artırırsan daha aşağıdan yapışır
+
+          7) KATEGORİ DEĞİŞİNCE SCROLL NOKTASI:
+             - contentTopRef + offset
+             - scrollToContentStart() içindeki offset ile oynayabilirsin
+         ========================================================= */}
+
+      <div className="flex flex-col items-start gap-8 lg:flex-row lg:items-stretch lg:gap-16 xl:gap-24">
+        {/* ======================================================
+            SIDEBAR COLUMN
+            - Sticky island burada
+            - Sidebar width ve maskot ayarları buradan yönetilir
+           ====================================================== */}
+        <aside className="relative hidden shrink-0 lg:block lg:w-[220px] xl:w-[240px]">
+          <div className="sticky top-32">
+            <CategoryFilter
+              categories={filterCategories}
+              activeCategory={activeCategory}
+              onCategoryClick={handleCategoryClick}
+              title={filterTitle}
             />
+
+            {/* 
+              SOL MASKOT
+              - Daha sola almak için -left değerini büyüt
+              - Daha aşağı/yukarı için top-[...] değiştir
+              - Daha küçük/büyük için w-* / h-* değiştir
+            */}
+            <div className="pointer-events-none absolute -left-10 top-[86%] z-30 h-24 w-24 transition-transform duration-300 ease-in-out hover:scale-110 hover:rotate-3 xl:-left-14 xl:h-32 xl:w-32">
+              <Image
+                src="/brand/mascots/soda_maskot.png"
+                alt="Soda Mascot"
+                width={180}
+                height={180}
+                className="h-full w-full object-contain drop-shadow-xl"
+              />
+            </div>
           </div>
-        </div>
+        </aside>
 
-        {/* Main Content */}
-        <div className="w-full lg:w-4/5 xl:w-[85%] flex flex-col gap-16 lg:gap-32">
-          {categories.map((category) => (
-            <section
-              key={category.id}
-              id={category.id}
-              className="scroll-mt-32 min-h-[200px]"
-            >
-              <h2 className="font-display font-black text-4xl md:text-6xl uppercase tracking-tighter mb-8 text-on_surface inline-block">
-                {category.name}
-                <div className="h-3 w-full bg-primary mt-2"></div>
-              </h2>
+        {/* ======================================================
+            MAIN CONTENT COLUMN
+            - Sağ taraftaki ürün alanı
+            - contentTopRef burada: kategori değişince ekran bu alana gelir
+           ====================================================== */}
+        <div className="w-full flex-1">
+          <div
+            ref={contentTopRef}
+            className="mx-auto w-full max-w-[1080px]"
+          >
+            {/* 
+              KATEGORİLER ARASI DİKEY MESAFE:
+              - gap-16 / lg:gap-24
+              - bunu artırırsan bölüm araları açılır
+            */}
+            <div className="flex flex-col gap-16 lg:gap-24">
+              {visibleCategories.map((category) => (
+                <section key={category.id} id={category.id} className="min-h-[200px]">
+                  {/* 
+                    BAŞLIK BOYUTU:
+                    - text-4xl md:text-5xl
+                    - küçültüldü, daha sakin görünür
+                  */}
+                  <h2 className="inline-block font-display text-4xl font-black uppercase tracking-tighter text-on_surface md:text-5xl">
+                    {category.name}
+                    <div className="mt-2 h-2.5 w-full bg-primary" />
+                  </h2>
 
-              {category.items.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
-                  {category.items.map((item) => (
-                    <ProductCard
-                      key={item.id}
-                      imageSrc={item.image}
-                      imageAlt={item.name}
-                      name={item.name}
-                      price={`₺${item.price}`}
-                      description={item.description}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="p-12 border-4 border-dashed border-on_surface/10 rounded-3xl text-center text-on_surface/30 font-display font-bold uppercase tracking-widest">
-                  Yakında Gelecek...
-                </div>
-              )}
-            </section>
-          ))}
+                  {/* 
+                    KART GRID ALANI
+                    - grid yapısı korunuyor
+                    - kart aralıkları iyi olduğu için büyük oynamadık
+                  */}
+                  {category.items.length > 0 ? (
+                    <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 lg:gap-10">
+                      {category.items.map((item) => (
+                        <ProductCard
+                          key={item.id}
+                          imageSrc={item.image}
+                          imageAlt={item.name}
+                          name={item.name}
+                          price={`₺${item.price}`}
+                          description={item.description}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mt-8 rounded-3xl border-4 border-dashed border-on_surface/10 p-12 text-center font-display font-bold uppercase tracking-widest text-on_surface/30">
+                      Yakında Gelecek...
+                    </div>
+                  )}
+                </section>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
