@@ -5,6 +5,7 @@ import Image from "next/image";
 import CategoryFilter from "@/components/ui/CategoryFilter";
 import ProductCard from "@/components/ui/ProductCard";
 import MobileProductAccordion from "@/components/ui/MobileProductAccordion";
+import { LayoutGroup } from "framer-motion";
 
 interface MenuItem {
   id: string;
@@ -50,6 +51,107 @@ export default function MenuClient({
     if (activeCategory === "all") return categories;
     return categories.filter((category) => category.id === activeCategory);
   }, [activeCategory, categories]);
+
+    const isTurkish = allLabel === "TÜMÜ";
+
+  const getMobileCategoryAsset = (id: string) => {
+    switch (id) {
+      case "all":
+        return "/brand/logo/logo_background_removed.png";
+      case "et-burger":
+        return "/brand/mascots/burger_maskot.png";
+      case "tavuk-burger":
+        return "/brand/mascots/burger_maskot.png";
+      case "hotdog":
+        return "/brand/mascots/hotdog_maskot.png";
+      case "ilave":
+        return "/brand/mascots/patates_maskotu.png";
+      case "icecek":
+        return "/brand/mascots/soda_maskot.png";
+      default:
+        return "/brand/logo/logo_background_removed.png";
+    }
+  };
+
+  const getCompactMobileLabel = (id: string) => {
+    if (isTurkish) {
+      switch (id) {
+        case "all":
+          return "TÜMÜ";
+        case "et-burger":
+          return "ET";
+        case "tavuk-burger":
+          return "TAVUK";
+        case "hotdog":
+          return "HOTDOG";
+        case "ilave":
+          return "İLAVE";
+        case "icecek":
+          return "İÇECEK";
+        default:
+          return "";
+      }
+    }
+
+    switch (id) {
+      case "all":
+        return "ALL";
+      case "et-burger":
+        return "BEEF";
+      case "tavuk-burger":
+        return "CHICKEN";
+      case "hotdog":
+        return "HOTDOG";
+      case "ilave":
+        return "EXTRAS";
+      case "icecek":
+        return "DRINKS";
+      default:
+        return "";
+    }
+  };
+
+    const getMobileCategoryImageClass = (id: string) => {
+    /**
+     * ICON TUNING GUIDE
+     * ---------------------------------------------------------
+     * h-[..] / w-[..]      = ikonun gerçek boyutu
+     * translate-x-[..]     = sağa/sola kaydırma
+     *   - pozitif => sağa
+     *   - negatif => sola
+     * translate-y-[..]     = aşağı/yukarı kaydırma
+     *   - pozitif => aşağı
+     *   - negatif => yukarı
+     * scale-[..]           = ekstra zoom
+     *
+     * Örnek:
+     * - hotdog biraz sola kaymışsa translate-x değerini küçült
+     * - drinks biraz aşağıdaysa translate-y değerini azalt
+     * - bir ikon küçük geliyorsa h/w veya scale artır
+     */
+    switch (id) {
+      case "all":
+        return "h-[56px] w-[56px] translate-x-0 translate-y-0 scale-100";
+
+      case "et-burger":
+        return "h-[84px] w-[84px] translate-x-0 translate-y-[6px] scale-[1.08]";
+
+      case "tavuk-burger":
+        return "h-[84px] w-[84px] translate-x-0 translate-y-[6px] scale-[1.08]";
+
+      case "hotdog":
+        return "h-[86px] w-[86px] translate-x-[2px] translate-y-[5px] scale-[1.05]";
+
+      case "ilave":
+        return "h-[82px] w-[82px] translate-x-0 translate-y-[6px] scale-[1.08]";
+
+      case "icecek":
+        return "h-[78px] w-[78px] translate-x-[1px] translate-y-[4px] scale-[1.05]";
+
+      default:
+        return "h-[60px] w-[60px] translate-x-0 translate-y-0 scale-100";
+    }
+  };
 
   const scrollToContentStart = () => {
     if (!contentTopRef.current) return;
@@ -101,25 +203,62 @@ export default function MenuClient({
 
         {/* Main Content */}
         <div className="w-full flex-1">
-          {/* Mobile / Tablet Category Pills */}
-          <div className="mb-8 lg:hidden">
-            <div className="-mx-6 overflow-x-auto px-6 md:-mx-8 md:px-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <div className="flex w-max gap-3 pb-2">
+                    {/* Mobile / Tablet Category Icons */}
+          <div className="mb-10 lg:hidden">
+            <div className="mx-auto max-w-[390px] sm:max-w-none">
+              <div className="grid grid-cols-3 gap-x-4 gap-y-5 sm:grid-cols-6 sm:gap-x-5">
                 {filterCategories.map((category) => {
                   const isActive = activeCategory === category.id;
+                  const asset = getMobileCategoryAsset(category.id);
+                  const compactLabel = getCompactMobileLabel(category.id);
+                  const imageClass = getMobileCategoryImageClass(category.id);
 
                   return (
                     <button
                       key={category.id}
                       type="button"
                       onClick={() => handleCategoryClick(category.id)}
-                      className={`rounded-full border-2 px-4 py-2 font-display text-sm font-black uppercase tracking-wide transition-all ${
-                        isActive
-                          ? "border-primary bg-primary text-white shadow-[4px_4px_12px_rgba(30,28,16,0.12)]"
-                          : "border-primary/10 bg-surface_container_highest text-on_surface"
-                      }`}
+                      className="flex flex-col items-center justify-start gap-2 text-center"
                     >
-                      {category.label}
+                      <span
+                        className={`relative flex h-[84px] w-[84px] items-center justify-center overflow-visible rounded-full border-2 transition-all duration-300 sm:h-[94px] sm:w-[94px] ${
+                          isActive
+                            ? "scale-105 border-primary bg-primary/5 shadow-[6px_6px_16px_rgba(30,28,16,0.14)]"
+                            : "border-primary/15 bg-surface_container_highest/75"
+                        }`}
+                      >
+                        <span
+                          className="absolute inset-0 rounded-full opacity-100"
+                          style={{
+                            backgroundImage: `
+                              radial-gradient(circle at 50% 50%, rgba(166,0,2,0.16) 0%, rgba(166,0,2,0.08) 18%, transparent 18%),
+                              repeating-conic-gradient(
+                                from 0deg at 50% 50%,
+                                rgba(166,0,2,0.13) 0deg 11deg,
+                                transparent 11deg 22deg
+                              )
+                            `,
+                          }}
+                        />
+
+                        <Image
+                          src={asset}
+                          alt={category.label}
+                          width={96}
+                          height={96}
+                          className={`relative z-10 object-contain drop-shadow-[0_10px_16px_rgba(0,0,0,0.20)] transition-all duration-300 ${imageClass} ${
+                            isActive ? "opacity-100" : "opacity-90"
+                          }`}
+                        />
+                      </span>
+
+                      <span
+                        className={`font-display text-[0.72rem] font-black uppercase leading-tight tracking-wider ${
+                          isActive ? "text-primary" : "text-on_surface/75"
+                        }`}
+                      >
+                        {compactLabel}
+                      </span>
                     </button>
                   );
                 })}
@@ -139,17 +278,21 @@ export default function MenuClient({
                   {category.items.length > 0 ? (
                     <>
                       {/* Mobile / Tablet Accordion Layout */}
-                      <div className="mt-6 flex flex-col gap-4 lg:hidden">
-                        {category.items.map((item) => (
-                          <MobileProductAccordion
-                            key={item.id}
-                            imageSrc={item.image}
-                            imageAlt={item.name}
-                            name={item.name}
-                            price={`₺${item.price}`}
-                            description={item.description}
-                          />
-                        ))}
+                      <div className="mt-6 lg:hidden">
+                        <LayoutGroup id={`mobile-category-${category.id}`}>
+                          <div className="flex flex-col gap-4">
+                            {category.items.map((item) => (
+                              <MobileProductAccordion
+                                key={item.id}
+                                imageSrc={item.image}
+                                imageAlt={item.name}
+                                name={item.name}
+                                price={`₺${item.price}`}
+                                description={item.description}
+                              />
+                            ))}
+                          </div>
+                        </LayoutGroup>
                       </div>
 
                       {/* Desktop Grid Layout - untouched in spirit */}
