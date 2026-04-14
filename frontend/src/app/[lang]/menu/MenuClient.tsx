@@ -134,19 +134,25 @@ export default function MenuClient({
         return "h-[56px] w-[56px] translate-x-0 translate-y-0 scale-100";
 
       case "et-burger":
-        return "h-[84px] w-[84px] translate-x-0 translate-y-[6px] scale-[1.08]";
+        // İnek burger maskotu: optik olarak merkezde
+        return "h-[84px] w-[84px] translate-x-0 translate-y-[2px] scale-[1.08]";
 
       case "tavuk-burger":
-        return "h-[84px] w-[84px] translate-x-0 translate-y-[6px] scale-[1.08]";
+        // Tavuk burger maskotu: etiyle aynı durmalı
+        return "h-[84px] w-[84px] translate-x-0 translate-y-[2px] scale-[1.08]";
 
       case "hotdog":
-        return "h-[86px] w-[86px] translate-x-[2px] translate-y-[5px] scale-[1.05]";
+        // Sosisli maskotu: Asset'in doğal boşluğu nedeniyle sağa kayık duruyordu. 
+        // '-translate-x-[1px]' ile sola, 'translate-y-[3px]' ile aşağı merkezlendi.
+        return "h-[86px] w-[86px] -translate-x-[1px] translate-y-[3px] scale-[1.05]";
 
       case "ilave":
-        return "h-[82px] w-[82px] translate-x-0 translate-y-[6px] scale-[1.08]";
+        // Patates (Extras) maskotu: Optik ağırlığı yukarıdaydı, 'translate-y-[3px]' ile aşağı çekildi.
+        return "h-[82px] w-[82px] translate-x-0 translate-y-[3px] scale-[1.08]";
 
       case "icecek":
-        return "h-[78px] w-[78px] translate-x-[1px] translate-y-[4px] scale-[1.05]";
+        // İçecek maskotu: 'translate-x-0' ve 'translate-y-[2px]' ile tam ortaya alındı.
+        return "h-[78px] w-[78px] translate-x-0 translate-y-[2px] scale-[1.05]";
 
       default:
         return "h-[60px] w-[60px] translate-x-0 translate-y-0 scale-100";

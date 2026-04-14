@@ -1,10 +1,9 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useState, useEffect } from "react";
 import Image from "next/image";
 import {
   AnimatePresence,
-  LayoutGroup,
   motion,
   type Transition,
 } from "framer-motion";
@@ -18,22 +17,33 @@ type MobileProductAccordionProps = {
   className?: string;
 };
 
+// "PowerPoint Morph" tadında sürtünmesiz organik yay fiziği:
 const layoutTransition: Transition = {
-  duration: 0.52,
-  ease: "easeInOut",
+  type: "spring",
+  stiffness: 300,
+  damping: 30,
+  mass: 0.6,
 };
 
-const sharedTransition: Transition = {
-  duration: 0.44,
-  ease: "easeInOut",
+const checkerSvg = `data:image/svg+xml;utf8,<svg width="10" height="10" xmlns="http://www.w3.org/2000/svg"><rect width="5" height="5" fill="%23a60002" /><rect x="5" y="5" width="5" height="5" fill="%23a60002" /></svg>`;
+const checkerStyle = {
+  backgroundImage: `url('${checkerSvg}')`,
+  backgroundSize: "10px 10px",
+  backgroundRepeat: "repeat",
 };
 
-const contentFade: Transition = {
-  duration: 0.3,
-  ease: "easeOut",
+const starburstStyle = {
+  backgroundImage: `
+    radial-gradient(circle at 50% 50%, rgba(166,0,2,0.18) 0%, rgba(166,0,2,0.09) 20%, transparent 20%),
+    repeating-conic-gradient(
+      from 0deg at 50% 50%,
+      rgba(166,0,2,0.16) 0deg 10deg,
+      transparent 10deg 20deg
+    )
+  `,
 };
 
-export default function MobileProductAccordion({
+function MobileProductAccordion({
   imageSrc = "",
   imageAlt,
   name,
@@ -42,260 +52,244 @@ export default function MobileProductAccordion({
   className = "",
 }: MobileProductAccordionProps) {
   const [open, setOpen] = useState(false);
-  const hasImage = Boolean(imageSrc && imageSrc.trim().length > 0);
   const uid = useId();
 
-  const priceId = `price-${uid}`;
-  const chevronId = `chevron-${uid}`;
+  // Modal açıkken arkadaki body'nin kaymasını engelle:
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  const hasImage = Boolean(imageSrc && imageSrc.trim().length > 0);
+
+  // Ortak Animasyon ID'leri (Shared Component LayoutIds):
+  const ids = {
+    container: `container-${uid}`,
+    imageWrapper: `img-wrapper-${uid}`,
+    title: `title-${uid}`,
+    price: `price-${uid}`,
+    chevron: `chevron-${uid}`,
+  };
+
+  /**
+   * BORDER RADIUS SCALE CORRECTION:
+   * Framer Motion layout/layoutId ile boyut anime ederken
+   * border-radius objelerinin CSS classları üzerinden değil, 
+   * sayısal (number) olarak verilmesi şarttır. (örn: 32)
+   */
+  const BASE_RADIUS = 32;       // 2rem (32px)
+  const IMG_RADIUS_COMPACT = 24;  // 1.5rem (24px)
+  const IMG_RADIUS_EXPANDED = 30; // 1.9rem (30px)
 
   return (
-    <LayoutGroup id={`mobile-accordion-${uid}`}>
-      <motion.article
-        layout
-        transition={{ layout: layoutTransition }}
-        style={{
-          borderRadius: "2rem",
-          boxShadow: "6px 6px 20px rgba(30,28,16,0.10)",
-        }}
-        className={`overflow-hidden border border-on_surface/10 bg-background/95 backdrop-blur-sm ${className}`}
-      >
-        <button
-          type="button"
-          onClick={() => setOpen((prev) => !prev)}
-          aria-expanded={open}
-          className="block w-full text-left"
-        >
-          <motion.div
-            layout
-            transition={{ layout: layoutTransition }}
-            className="p-4 sm:p-5"
+    <>
+      <div className={`relative ${className}`}>
+        {open ? (
+          // PLACEHOLDER: Compact kart havaya kalktığında arkada kalan listenin çökmesini engeller
+          <div className="h-[138px] w-full sm:h-[154px]" aria-hidden />
+        ) : (
+          /* COMPACT CARD (Kapalı Liste Durumu) */
+          <motion.article
+            layoutId={ids.container}
+            transition={layoutTransition}
+            style={{
+              borderRadius: BASE_RADIUS,
+              boxShadow: "6px 6px 16px rgba(0,0,0,0.08)"
+            }}
+            className="overflow-hidden border border-on_surface/10 bg-background/95 backdrop-blur-sm"
           >
-            <div
-              className={`grid items-start gap-4 ${
-                open
-                  ? "grid-cols-1"
-                  : "grid-cols-[140px_minmax(0,1fr)] gap-x-7 sm:grid-cols-[150px_minmax(0,1fr)]"
-              }`}
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              aria-expanded={false}
+              className="flex w-full items-center gap-x-5 p-4 text-left sm:p-5"
             >
-              {/* IMAGE */}
+              {/* IMAGE WRAPPER (Compact) */}
               <motion.div
-                layout
-                transition={{ layout: layoutTransition }}
-                style={{
-                  borderRadius: open ? "1.9rem" : "1.5rem",
-                }}
-                className={`relative overflow-visible bg-surface_container_highest/90 ${
-                  open
-                    ? "h-[240px] w-full sm:h-[280px]"
-                    : "h-[104px] w-[140px] sm:h-[112px] sm:w-[150px]"
-                }`}
+                layoutId={ids.imageWrapper}
+                transition={layoutTransition}
+                style={{ borderRadius: IMG_RADIUS_COMPACT }}
+                className="relative h-[104px] w-[140px] shrink-0 overflow-visible sm:h-[112px] sm:w-[150px]"
               >
-                <div
-                  className="absolute inset-0 overflow-hidden"
-                  style={{ borderRadius: open ? "1.9rem" : "1.5rem" }}
-                >
-                  <div
-                    className="absolute inset-0 opacity-100"
-                    style={{
-                      backgroundImage: `
-                        radial-gradient(circle at 50% 50%, rgba(166,0,2,0.18) 0%, rgba(166,0,2,0.09) 20%, transparent 20%),
-                        repeating-conic-gradient(
-                          from 0deg at 50% 50%,
-                          rgba(166,0,2,0.16) 0deg 10deg,
-                          transparent 10deg 20deg
-                        )
-                      `,
-                    }}
-                  />
+                <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: IMG_RADIUS_COMPACT }}>
+                  <div className="absolute inset-0" style={starburstStyle} />
                 </div>
-
                 {hasImage ? (
-                  <motion.div
-                    layout
-                    transition={{ layout: layoutTransition }}
-                    className="absolute inset-0 z-10 overflow-visible"
-                  >
+                  <div className="absolute inset-0 z-10 flex items-center justify-center overflow-visible">
                     <Image
                       src={imageSrc}
                       alt={imageAlt}
                       fill
-                      className={`object-contain drop-shadow-[0_18px_28px_rgba(0,0,0,0.26)] transition-all duration-500 ease-in-out ${
-                        open
-                          ? "scale-[1.08] p-3"
-                          : "scale-[1.34] translate-x-3 translate-y-1"
-                      }`}
+                      className="scale-[1.30] -translate-x-[2px] object-contain drop-shadow-[0_18px_20px_rgba(0,0,0,0.20)]"
                     />
-                  </motion.div>
+                  </div>
                 ) : (
-                  <motion.div
-                    layout
-                    transition={{ layout: layoutTransition }}
-                    className="absolute inset-0 z-10 flex items-center justify-center"
-                  >
-                    <span className="rounded-full bg-primary px-4 py-1 font-display text-xs font-black uppercase tracking-widest text-white">
-                      Arada
-                    </span>
-                  </motion.div>
+                  <div className="absolute inset-0 z-10 flex items-center justify-center">
+                    <span className="rounded-full bg-primary px-4 py-1 font-display text-xs font-black uppercase tracking-widest text-white">Arada</span>
+                  </div>
                 )}
               </motion.div>
 
-              {/* CONTENT */}
-              <motion.div
-                layout="position"
-                transition={{ layout: layoutTransition }}
-                className="min-w-0"
+              {/* CONTENT WRAPPER (Compact) */}
+              <div className="flex min-w-0 flex-1 flex-col justify-center gap-3">
+                <motion.h3
+                  layoutId={ids.title}
+                  transition={layoutTransition}
+                  style={{ transformOrigin: "left center" }} // GPU ivmelenmeli smooth koruma
+                  className="line-clamp-2 font-display text-[1.85rem] font-black uppercase leading-[0.92] tracking-tight text-on_surface sm:text-[2rem]"
+                >
+                  {name}
+                </motion.h3>
+
+                <div className="flex w-full shrink-0 items-center justify-end gap-3">
+                  <motion.span
+                    layoutId={ids.price}
+                    transition={layoutTransition}
+                    className="whitespace-nowrap rounded-full bg-[#f2a11a] px-4 py-1.5 font-display text-base font-black text-primary shadow-[2px_2px_0px_#1e1c10] sm:text-[1.05rem]"
+                  >
+                    {price}
+                  </motion.span>
+
+                  <motion.span
+                    layoutId={ids.chevron}
+                    transition={layoutTransition}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-primary/20 bg-surface_container_highest text-primary"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </motion.span>
+                </div>
+              </div>
+            </button>
+          </motion.article>
+        )}
+      </div>
+
+      {/* EXPANDED CARD MODAL OVERLAY */}
+      {/* Isolation from layout thrashing: Fixed position overlay out of DOM flow */}
+      <AnimatePresence>
+        {open && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-8">
+            {/* Backdrop Ovelay - Tıklandığında Anında Kapatır */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }} // Hızlı exit performansı (stutter'ı kırar)
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setOpen(false)}
+            />
+
+            {/* Modal Content */}
+            <motion.article
+              layoutId={ids.container}
+              transition={layoutTransition}
+              style={{
+                borderRadius: BASE_RADIUS,
+                boxShadow: "0 24px 48px rgba(0,0,0,0.5)"
+              }}
+              className="relative w-full max-w-[420px] overflow-hidden border border-on_surface/10 bg-background/95 backdrop-blur-md"
+            >
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-expanded={true}
+                className="block w-full text-left"
               >
-                {/* OPEN STATE HEADER */}
-                {open ? (
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1 overflow-hidden pr-1">
-                      <AnimatePresence mode="wait" initial={false}>
-                        <motion.h3
-                          key="title-open"
-                          initial={{ x: 18, opacity: 0 }}
-                          animate={{ x: 0, opacity: 1 }}
-                          exit={{ x: -18, opacity: 0 }}
-                          transition={contentFade}
-                          className="font-display text-[2rem] font-black uppercase leading-[0.95] tracking-tight text-on_surface sm:text-[2.2rem]"
-                        >
-                          {name}
-                        </motion.h3>
-                      </AnimatePresence>
+                <div className="flex flex-col gap-4 p-5 sm:p-6">
+
+                  {/* IMAGE WRAPPER (Expanded) */}
+                  <motion.div
+                    layoutId={ids.imageWrapper}
+                    transition={layoutTransition}
+                    style={{ borderRadius: IMG_RADIUS_EXPANDED }}
+                    className="relative h-[220px] w-full shrink-0 overflow-visible sm:h-[260px]"
+                  >
+                    <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: IMG_RADIUS_EXPANDED }}>
+                      <div className="absolute inset-0" style={starburstStyle} />
+                    </div>
+                    {hasImage ? (
+                      <div className="absolute inset-0 z-10 flex items-center justify-center overflow-visible">
+                        <Image
+                          src={imageSrc}
+                          alt={imageAlt}
+                          fill
+                          className="scale-[1.08] object-contain p-3 drop-shadow-[0_24px_36px_rgba(0,0,0,0.4)]"
+                        />
+                      </div>
+                    ) : (
+                      <div className="absolute inset-0 z-10 flex items-center justify-center">
+                        <span className="rounded-full bg-primary px-4 py-1 font-display text-xs font-black uppercase tracking-widest text-white">Arada</span>
+                      </div>
+                    )}
+                  </motion.div>
+
+                  {/* CONTENT WRAPPER (Expanded) */}
+                  <div className="flex min-w-0 flex-1 w-full flex-row items-start justify-between">
+                    <div className="pr-1">
+                      <motion.h3
+                        layoutId={ids.title}
+                        transition={layoutTransition}
+                        style={{ transformOrigin: "left center" }} // Distorsiyonsuz GPU base typography scale 
+                        className="font-display text-[2rem] font-black uppercase leading-[0.95] tracking-tight text-on_surface sm:text-[2.2rem]"
+                      >
+                        {name}
+                      </motion.h3>
                     </div>
 
                     <div className="flex shrink-0 items-center gap-3">
                       <motion.span
-                        layoutId={priceId}
-                        transition={sharedTransition}
+                        layoutId={ids.price}
+                        transition={layoutTransition}
                         className="whitespace-nowrap rounded-full bg-[#f2a11a] px-4 py-1.5 font-display text-base font-black text-primary shadow-[2px_2px_0px_#1e1c10] sm:text-[1.05rem]"
                       >
                         {price}
                       </motion.span>
 
                       <motion.span
-                        layoutId={chevronId}
-                        transition={sharedTransition}
-                        className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary/20 bg-surface_container_highest text-primary"
+                        layoutId={ids.chevron}
+                        transition={layoutTransition}
                         animate={{ rotate: 180 }}
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-primary/20 bg-surface_container_highest text-primary"
                       >
-                        <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          aria-hidden="true"
-                        >
-                          <path
-                            d="M6 9L12 15L18 9"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </motion.span>
                     </div>
                   </div>
-                ) : (
-                  <div className="min-w-0">
-                    <div className="overflow-hidden">
-                      <AnimatePresence mode="wait" initial={false}>
-                        <motion.h3
-                          key="title-closed"
-                          initial={{ x: -18, opacity: 0 }}
-                          animate={{ x: 0, opacity: 1 }}
-                          exit={{ x: 18, opacity: 0 }}
-                          transition={contentFade}
-                          className="line-clamp-2 font-display text-[1.9rem] font-black uppercase leading-[0.92] tracking-tight text-on_surface sm:text-[2.05rem]"
-                        >
-                          {name}
-                        </motion.h3>
-                      </AnimatePresence>
-                    </div>
 
-                    <motion.div
-                      layout="position"
-                      transition={{ layout: layoutTransition }}
-                      className="mt-4 flex items-center justify-end gap-3"
-                    >
-                      <motion.span
-                        layoutId={priceId}
-                        transition={sharedTransition}
-                        className="whitespace-nowrap rounded-full bg-[#f2a11a] px-4 py-1.5 font-display text-base font-black text-primary shadow-[2px_2px_0px_#1e1c10] sm:text-[1.05rem]"
-                      >
-                        {price}
-                      </motion.span>
-
-                      <motion.span
-                        layoutId={chevronId}
-                        transition={sharedTransition}
-                        className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-primary/20 bg-surface_container_highest text-primary"
-                        animate={{ rotate: 0 }}
-                      >
-                        <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          aria-hidden="true"
-                        >
-                          <path
-                            d="M6 9L12 15L18 9"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </motion.span>
-                    </motion.div>
-                  </div>
-                )}
-              </motion.div>
-            </div>
-
-            {/* OPEN STATE EXTRA CONTENT */}
-            <AnimatePresence initial={false}>
-              {open && (
-                <motion.div
-                  key="details"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.34, ease: "easeOut", delay: 0.08 }}
-                  className="mt-4"
-                >
-                  <div
-                    className="h-[12px] w-full opacity-95"
-                    style={{
-                      backgroundImage: `
-                        linear-gradient(45deg, #a60002 25%, transparent 25%),
-                        linear-gradient(-45deg, #a60002 25%, transparent 25%),
-                        linear-gradient(45deg, transparent 75%, #a60002 75%),
-                        linear-gradient(-45deg, transparent 75%, #a60002 75%)
-                      `,
-                      backgroundSize: "10px 10px",
-                      backgroundPosition: "0 0, 0 5px, 5px -5px, -5px 0px",
-                    }}
-                  />
-
+                  {/* DESCRIPTION & SEPARATOR */}
+                  {/* Animasyondan hemen sonra belirmesi için delay ve çok hızlı (duration: 0.05) exit stratejisi */}
+                  {/* Exit hızlı olmazsa "ExpandedContainer" kapanırken daralma sırasında içeriğin taşmasına ve stutter kasmasına yol açar */}
                   <motion.div
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 6 }}
-                    transition={{ duration: 0.32, ease: "easeOut", delay: 0.12 }}
-                    className="mt-4 rounded-[1.5rem] bg-surface_container_highest/85 p-4"
+                    exit={{ opacity: 0, transition: { duration: 0.05 } }}
+                    transition={{ delay: 0.15, duration: 0.2 }}
                   >
-                    <p className="font-[family:var(--font-manrope)] text-[1rem] font-bold leading-relaxed text-on_surface/80">
-                      {description}
-                    </p>
+                    <div className="h-[10px] w-full opacity-95" style={checkerStyle} />
+                    <div className="mb-1 mt-4 rounded-[1.5rem] bg-surface_container_highest/85 p-4">
+                      <p className="font-[family:var(--font-manrope)] text-[1rem] font-bold leading-relaxed text-on_surface/80">
+                        {description}
+                      </p>
+                    </div>
                   </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        </button>
-      </motion.article>
-    </LayoutGroup>
+                </div>
+              </button>
+            </motion.article>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
+
+export default MobileProductAccordion;

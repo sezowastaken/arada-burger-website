@@ -2,11 +2,17 @@
   "categories": [
     {
       "id": "et-burgerler",
-      "name": { "tr": "Klasik Burgerler", "en": "Classic Burgers" },
+      "name": {
+        "tr": "Et Burgerler",
+        "en": "Beef Burgers"
+      },
       "items": [
         {
           "id": "marmaris-burger",
-          "name": { "tr": "Marmaris Burger", "en": "Marmaris Burger" },
+          "name": {
+            "tr": "Marmaris Burger",
+            "en": "Marmaris Burger"
+          },
           "price": 480,
           "description": {
             "tr": "Burger köftesi, cheddar peyniri, trüf mayo, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
@@ -16,73 +22,88 @@
         },
         {
           "id": "datca-burger",
-          "name": { "tr": "Datça Burger", "en": "Datça Burger" },
+          "name": {
+            "tr": "Datça Burger",
+            "en": "Datça Burger"
+          },
           "price": 500,
           "description": {
             "tr": "Burger köftesi, cheddar peyniri, közlenmiş patlıcan, közlenmiş kapya biber, karamelize soğan, iceberg marul. (2 soğan halkası, kajun patates)",
-            "en": "Burger patty, cheddar cheese, roasted eggplant, roasted bell pepper, caramelized onions, iceberg lettuce. (2 onion rings, cajun fries)"
+            "en": "Burger patty, cheddar cheese, roasted eggplant, roasted capia pepper, caramelized onion, iceberg lettuce. (2 onion rings, cajun fries)"
           },
           "image": "/menu/products/Datça_Burger.png"
         },
         {
           "id": "gocek-burger",
-          "name": { "tr": "Göcek Burger", "en": "Göcek Burger" },
-          "price": 520,
+          "name": {
+            "tr": "Göcek Burger",
+            "en": "Göcek Burger"
+          },
+          "price": 500,
           "description": {
             "tr": "Burger köftesi, mantar taneli krema, cheddar peyniri, trüf cheese sos, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
-            "en": "Burger patty, mushroom cream, cheddar cheese, truffle cheese sauce, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
+            "en": "Burger patty, mushroom cream with mushroom pieces, cheddar cheese, truffle cheese sauce, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
           },
           "image": "/menu/products/Göcek_Burger.png"
-        }
-      ]
-    },
-    {
-      "id": "tavuk-burgerler",
-      "name": { "tr": "Tavuk Burgerler", "en": "Chicken Burgers" },
-      "items": [
-        {
-          "id": "bozburun-burger",
-          "name": { "tr": "Bozburun Burger", "en": "Bozburun Burger" },
-          "price": 480,
-          "description": {
-            "tr": "Çıtır tavuk burger, cheddar peyniri, özel happy sos, domates, turşu, iceberg marul. (2 soğan halkası, kajun patates)",
-            "en": "Crispy chicken burger, cheddar cheese, special happy sauce, tomato, pickles, iceberg lettuce. (2 onion rings, cajun fries)"
-          },
-          "image": "/menu/products/Bozburun_Burger.png"
-        }
-      ]
-    },
-    {
-      "id": "spesiyal-burgerler",
-      "name": { "tr": "Spesiyal Burgerler", "en": "Special Burgers" },
-      "items": [
+        },
         {
           "id": "selimiye-burger",
-          "name": { "tr": "Selimiye Burger", "en": "Selimiye Burger" },
+          "name": {
+            "tr": "Selimiye Burger",
+            "en": "Selimiye Burger"
+          },
           "price": 520,
           "description": {
-            "tr": "Burger köftesi, tereyağında kavrulmuş Datça badem, özel acı sos, cheddar peyniri, trüf sos, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
-            "en": "Burger patty, butter-roasted Datça almonds, special hot sauce, cheddar cheese, truffle sauce, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
+            "tr": "Burger köftesi, füme kaburga eti, trüf cheese sos, turşu relish, iceberg marul ve marul parçaları. (2 soğan halkası, kajun patates)",
+            "en": "Burger patty, smoked rib meat, truffle cheese sauce, pickle relish, iceberg lettuce and lettuce pieces. (2 onion rings, cajun fries)"
           },
           "image": "/menu/products/Selimiye_Burger.png"
         },
         {
-          "id": "bayir-burger",
-          "name": { "tr": "Bayır Burger", "en": "Bayır Burger" },
+          "id": "bozburun-burger",
+          "name": {
+            "tr": "Bozburun Burger",
+            "en": "Bozburun Burger"
+          },
           "price": 520,
           "description": {
             "tr": "Burger köftesi, tütsülenmiş balkan eti, cheddar peyniri, mor soğan, trüf mayonez, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
             "en": "Burger patty, smoked Balkan meat, cheddar cheese, red onion, truffle mayonnaise, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
           },
-          "image": "/menu/products/Bayır_Burger.png"
+          "image": "/menu/products/Bozburun_Burger.png"
         },
         {
-          "id": "sogut-burger",
-          "name": { "tr": "Söğüt Burger", "en": "Söğüt Burger" },
-          "price": 500,
+          "id": "bayir-burger",
+          "name": {
+            "tr": "Bayır Burger",
+            "en": "Bayır Burger"
+          },
+          "price": 520,
           "description": {
-            "tr": "Burger köftesi, füme kaburga eti, trüf cheese sos, turşu relish, iceberg marul ve marul parçaları. (2 soğan halkası, kajun patates)",
-            "en": "Burger patty, smoked rib meat, truffle cheese sauce, pickle relish, iceberg lettuce and lettuce pieces. (2 onion rings, cajun fries)"
+            "tr": "Burger köftesi, tereyağında kavrulmuş Datça badem, özel acı sos, cheddar peyniri, trüf sos, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
+            "en": "Burger patty, butter-roasted Datça almonds, special hot sauce, cheddar cheese, truffle sauce, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
+          },
+          "image": "/menu/products/Bayır_Burger.png"
+        }
+      ]
+    },
+    {
+      "id": "tavuk-burgerler",
+      "name": {
+        "tr": "Tavuk Burgerler",
+        "en": "Chicken Burgers"
+      },
+      "items": [
+        {
+          "id": "sogut-burger",
+          "name": {
+            "tr": "Söğüt Burger",
+            "en": "Söğüt Burger"
+          },
+          "price": 480,
+          "description": {
+            "tr": "Çıtır tavuk burger, cheddar peyniri, özel happy sos, domates, turşu, iceberg marul. (2 soğan halkası, kajun patates)",
+            "en": "Crispy chicken burger, cheddar cheese, special happy sauce, tomato, pickles, iceberg lettuce. (2 onion rings, cajun fries)"
           },
           "image": "/menu/products/Söğüt_Burger.png"
         }
@@ -90,71 +111,95 @@
     },
     {
       "id": "hotdoglar",
-      "name": { "tr": "Hotdoglar", "en": "Hotdogs" },
+      "name": {
+        "tr": "Hotdog",
+        "en": "Hotdog"
+      },
       "items": [
         {
-          "id": "aksaz-hotdog",
-          "name": { "tr": "Aksaz Hotdog", "en": "Aksaz Hotdog" },
-          "price": 350,
-          "description": {
-            "tr": "Dana frankfurter sosis, turşu, ketçap, mayonez, mor soğan, 2 soğan halkası, kajun patates.",
-            "en": "Beef frankfurter sausage, pickles, ketchup, mayonnaise, red onion, 2 onion rings, cajun fries."
-          },
-          "image": "/menu/products/Aksaz_Hotdog.png"
-        },
-        {
           "id": "turgut-hotdog",
-          "name": { "tr": "Turgut Hotdog", "en": "Turgut Hotdog" },
+          "name": {
+            "tr": "Turgut Hotdog",
+            "en": "Turgut Hotdog"
+          },
           "price": 350,
           "description": {
-            "tr": "Dana frankfurter sosis, karamelize soğan, ketçap, mayonez, hardal, 2 soğan halkası, kajun patates.",
-            "en": "Beef frankfurter sausage, caramelized onions, ketchup, mayonnaise, mustard, 2 onion rings, cajun fries."
+            "tr": "Dana frankfurter sosis, turşu, ketçap, mayonez, mor soğan, 2 soğan halkası, kajun patates",
+            "en": "Beef frankfurter sausage, pickles, ketchup, mayonnaise, red onion, 2 onion rings, cajun fries"
           },
           "image": "/menu/products/Turgut_Hotdog.png"
+        },
+        {
+          "id": "aksaz-hotdog",
+          "name": {
+            "tr": "Aksaz Hotdog",
+            "en": "Aksaz Hotdog"
+          },
+          "price": 350,
+          "description": {
+            "tr": "Dana frankfurter sosis, karamelize soğan, ketçap, mayonez, hardal, 2 soğan halkası, kajun patates",
+            "en": "Beef frankfurter sausage, caramelized onion, ketchup, mayonnaise, mustard, 2 onion rings, cajun fries"
+          },
+          "image": "/menu/products/Aksaz_Hotdog.png"
         }
       ]
     },
     {
       "id": "ekstralar",
-      "name": { "tr": "İlaveler", "en": "Extras" },
+      "name": {
+        "tr": "İlaveler",
+        "en": "Extras"
+      },
       "items": [
         {
           "id": "patates-kizartmasi",
-          "name": { "tr": "Patates Kızartması", "en": "French Fries" },
+          "name": {
+            "tr": "Patates Kızartması",
+            "en": "French Fries"
+          },
           "price": 210,
           "description": {
-            "tr": "300 gram kajun baharatlı patates kızartması.",
-            "en": "300 grams of cajun spiced french fries."
-          },
-          "image": ""
-        },
-        {
-          "id": "sogan-halkasi",
-          "name": { "tr": "Soğan Halkası", "en": "Onion Rings" },
-          "price": 250,
-          "description": {
-            "tr": "10 adet soğan halkası, 150 gram kajun baharatlı patates kızartması.",
-            "en": "10 onion rings, 150 grams of cajun spiced french fries."
+            "tr": "300 gram kajun baharatlı patates kızartması",
+            "en": "300 grams of cajun seasoned fries"
           },
           "image": ""
         },
         {
           "id": "ilave-fume-et",
-          "name": { "tr": "İlave Füme Et", "en": "Extra Smoked Meat" },
+          "name": {
+            "tr": "İlave Füme Et",
+            "en": "Extra Smoked Meat"
+          },
           "price": 80,
           "description": {
-            "tr": "Hamburgerin içine ekstra füme et.",
-            "en": "Extra smoked meat added to your burger."
+            "tr": "Hamburgerin içine ekstra",
+            "en": "Extra add-in for the burger"
+          },
+          "image": ""
+        },
+        {
+          "id": "sogan-halkasi",
+          "name": {
+            "tr": "Soğan Halkası",
+            "en": "Onion Rings"
+          },
+          "price": 250,
+          "description": {
+            "tr": "10 adet soğan halkası, 150 gram kajun baharatlı patates kızartması",
+            "en": "10 onion rings, 150 grams of cajun seasoned fries"
           },
           "image": ""
         },
         {
           "id": "ilave-kuru-et",
-          "name": { "tr": "İlave Kuru Et", "en": "Extra Dried Meat" },
+          "name": {
+            "tr": "İlave Kuru Et",
+            "en": "Extra Dried Meat"
+          },
           "price": 80,
           "description": {
-            "tr": "Hamburgerin içine ekstra kuru et.",
-            "en": "Extra dried meat added to your burger."
+            "tr": "Hamburgerin içine ekstra",
+            "en": "Extra add-in for the burger"
           },
           "image": ""
         }
@@ -162,85 +207,112 @@
     },
     {
       "id": "icecekler",
-      "name": { "tr": "İçecekler", "en": "Drinks" },
+      "name": {
+        "tr": "İçecekler",
+        "en": "Drinks"
+      },
       "items": [
         {
           "id": "coca-kola",
-          "name": { "tr": "Coca Kola", "en": "Coca Cola" },
-          "price": 70,
-          "description": {
+          "name": {
             "tr": "Coca Kola",
             "en": "Coca Cola"
+          },
+          "price": 70,
+          "description": {
+            "tr": "",
+            "en": ""
           },
           "image": ""
         },
         {
           "id": "fanta",
-          "name": { "tr": "Fanta", "en": "Fanta" },
-          "price": 70,
-          "description": {
+          "name": {
             "tr": "Fanta",
             "en": "Fanta"
+          },
+          "price": 70,
+          "description": {
+            "tr": "",
+            "en": ""
           },
           "image": ""
         },
         {
           "id": "sprite",
-          "name": { "tr": "Sprite", "en": "Sprite" },
-          "price": 70,
-          "description": {
+          "name": {
             "tr": "Sprite",
             "en": "Sprite"
+          },
+          "price": 70,
+          "description": {
+            "tr": "",
+            "en": ""
           },
           "image": ""
         },
         {
           "id": "fuse-tea",
-          "name": { "tr": "Fuse Tea (Limon, Şeftali)", "en": "Fuse Tea (Lemon, Peach)" },
+          "name": {
+            "tr": "Fuse Tea (Limon, Şeftali)",
+            "en": "Fuse Tea (Lemon, Peach)"
+          },
           "price": 70,
           "description": {
-            "tr": "Fuse Tea - Limon veya Şeftali",
-            "en": "Fuse Tea - Lemon or Peach"
+            "tr": "",
+            "en": ""
           },
           "image": ""
         },
         {
           "id": "buyuk-ayran",
-          "name": { "tr": "Büyük Ayran", "en": "Large Ayran" },
+          "name": {
+            "tr": "Büyük Ayran",
+            "en": "Large Ayran"
+          },
           "price": 50,
           "description": {
-            "tr": "Büyük ayran",
-            "en": "Large traditional yogurt drink"
+            "tr": "",
+            "en": ""
           },
           "image": ""
         },
         {
           "id": "soda",
-          "name": { "tr": "Soda", "en": "Soda" },
+          "name": {
+            "tr": "Soda",
+            "en": "Soda"
+          },
           "price": 40,
           "description": {
-            "tr": "Soda",
-            "en": "Soda water"
+            "tr": "",
+            "en": ""
           },
           "image": ""
         },
         {
           "id": "meyveli-soda",
-          "name": { "tr": "Meyveli Soda", "en": "Fruit Soda" },
+          "name": {
+            "tr": "Meyveli Soda",
+            "en": "Fruit Soda"
+          },
           "price": 50,
           "description": {
-            "tr": "Meyveli soda",
-            "en": "Fruit flavored soda"
+            "tr": "",
+            "en": ""
           },
           "image": ""
         },
         {
           "id": "su",
-          "name": { "tr": "Su", "en": "Water" },
-          "price": 30,
-          "description": {
+          "name": {
             "tr": "Su",
             "en": "Water"
+          },
+          "price": 30,
+          "description": {
+            "tr": "",
+            "en": ""
           },
           "image": ""
         }
