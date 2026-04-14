@@ -137,12 +137,25 @@ function MobileProductAccordion({
               </motion.div>
 
               {/* CONTENT WRAPPER (Compact) */}
-              <div className="flex min-w-0 flex-1 flex-col justify-center gap-3">
+              <div className="flex min-w-0 flex-1 mt-1 flex-col justify-center gap-3">
+                {/*
+                  EDIT GUIDE:
+                  ProductAccordion kapaliyken urun isminin top/bottom boslugunu
+                  bu h3'e `mt-*` ve `mb-*` Tailwind class'lari ekleyerek degistirebilirsin.
+                  Ornek: `className="... mt-1 mb-2"` gibi.
+
+                  Not:
+                  - Sadece urun isminin kendi ust/alt boslugunu degistirmek istiyorsan `h3`u duzenle.
+                  - Ustten kirpilma varsa margin yerine once `pt-*` dene; padding metni kutunun
+                    icinde asagi iter, margin ise dis bosluk ekler.
+                  - Isim ile alttaki fiyat/ikon blogu arasindaki genel dikey mesafeyi
+                    degistirmek istiyorsan bu wrapper'daki `gap-3` degerini degistir.
+                */}
                 <motion.h3
                   layoutId={ids.title}
                   transition={layoutTransition}
                   style={{ transformOrigin: "left center" }} // GPU ivmelenmeli smooth koruma
-                  className="line-clamp-2 font-display text-[1.85rem] font-black uppercase leading-[0.92] tracking-tight text-on_surface sm:text-[2rem]"
+                  className="line-clamp-2 pt-0.4 font-display text-[1.85rem] font-black uppercase leading-[0.92] tracking-tight text-on_surface sm:text-[2rem]"
                 >
                   {name}
                 </motion.h3>
