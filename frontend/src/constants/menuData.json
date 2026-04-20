@@ -106,6 +106,71 @@
             "en": "Crispy chicken burger, cheddar cheese, special happy sauce, tomato, pickles, iceberg lettuce. (2 onion rings, cajun fries)"
           },
           "image": "/menu/products/Söğüt_Burger.png"
+        },
+        {
+          "id": "mimaras-burger",
+          "name": {
+            "tr": "Mimaras Burger",
+            "en": "Mimaras Burger"
+          },
+          "price": 359,
+          "description": {
+            "tr": "Çıtır tavuk burger köftesi, burger sos, ballı hardal, iceberg parçalı mayonez, marul, turşu. (150 gr. kajun patates)",
+            "en": "Crispy chicken burger patty, burger sauce, honey mustard, chunky iceberg mayonnaise, lettuce, pickles. (150 g cajun fries)"
+          },
+          "image": "/menu/products/Mimaras_Burger.png"
+        },
+        {
+          "id": "knidos-burger",
+          "name": {
+            "tr": "Knidos Burger",
+            "en": "Knidos Burger"
+          },
+          "price": 379,
+          "description": {
+            "tr": "Çıtır tavuk parçaları (Nashville hot soslu), turşu, marul, acılı mayo, burger sos. (150 gr. kajun patates)",
+            "en": "Crispy chicken pieces (with Nashville hot sauce), pickles, lettuce, spicy mayo, burger sauce. (150 g cajun fries)"
+          },
+          "image": "/menu/products/Knidos_Burger.png"
+        },
+        {
+          "id": "kaunos-burger",
+          "name": {
+            "tr": "Kaunos Burger",
+            "en": "Kaunos Burger"
+          },
+          "price": 379,
+          "description": {
+            "tr": "Çıtır tavuk parçaları, smoky mayonez, karamelize soğan, cheddar, marul, turşu. (150 gr. kajun patates)",
+            "en": "Crispy chicken pieces, smoky mayonnaise, caramelized onion, cheddar, lettuce, pickles. (150 g cajun fries)"
+          },
+          "image": "/menu/products/Kaunos_Burger.png"
+        },
+        {
+          "id": "kleopatra-burger",
+          "name": {
+            "tr": "Kleopatra Burger",
+            "en": "Kleopatra Burger"
+          },
+          "price": 379,
+          "description": {
+            "tr": "Çıtır tavuk parçaları, pancarlı garlic mayonez, mor lahana coleslaw. (150 gr. kajun patates)",
+            "en": "Crispy chicken pieces, beetroot garlic mayonnaise, purple cabbage coleslaw. (150 g cajun fries)"
+          },
+          "image": "/menu/products/Kleopatra_Burger.png"
+        },
+        {
+          "id": "nimara-burger",
+          "name": {
+            "tr": "Nimara Burger",
+            "en": "Nimara Burger"
+          },
+          "price": 369,
+          "description": {
+            "tr": "Çıtır tavuk parçaları, cheddar sos, 2 dilim cheddar, marul, iceberg parçalı mayonez, çıtır soğan. (150 gr. kajun patates)",
+            "en": "Crispy chicken pieces, cheddar sauce, 2 slices of cheddar, lettuce, chunky iceberg mayonnaise, crispy onion. (150 g cajun fries)"
+          },
+          "image": "/menu/products/Nimara_Burger.png"
         }
       ]
     },
@@ -122,7 +187,7 @@
             "tr": "Turgut Hotdog",
             "en": "Turgut Hotdog"
           },
-          "price": 350,
+          "price": 410,
           "description": {
             "tr": "Dana frankfurter sosis, turşu, ketçap, mayonez, mor soğan, 2 soğan halkası, kajun patates",
             "en": "Beef frankfurter sausage, pickles, ketchup, mayonnaise, red onion, 2 onion rings, cajun fries"
@@ -135,12 +200,25 @@
             "tr": "Aksaz Hotdog",
             "en": "Aksaz Hotdog"
           },
-          "price": 350,
+          "price": 410,
           "description": {
             "tr": "Dana frankfurter sosis, karamelize soğan, ketçap, mayonez, hardal, 2 soğan halkası, kajun patates",
             "en": "Beef frankfurter sausage, caramelized onion, ketchup, mayonnaise, mustard, 2 onion rings, cajun fries"
           },
           "image": "/menu/products/Aksaz_Hotdog.png"
+        },
+        {
+          "id": "turunc-hotdog",
+          "name": {
+            "tr": "Turunç Hotdog",
+            "en": "Turunç Hotdog"
+          },
+          "price": 488,
+          "description": {
+            "tr": "Dana frankfurter sosis, Rus salatası, mısır, ketçap, 2 adet soğan halkası ve kajun patates",
+            "en": "Beef frankfurter sausage, Russian salad, corn, ketchup, 2 onion rings and cajun fries"
+          },
+          "image": "/menu/products/Turunç_Hotdog.png"
         }
       ]
     },
@@ -157,12 +235,12 @@
             "tr": "Patates Kızartması",
             "en": "French Fries"
           },
-          "price": 210,
+          "price": 250,
           "description": {
             "tr": "300 gram kajun baharatlı patates kızartması",
             "en": "300 grams of cajun seasoned fries"
           },
-          "image": ""
+          "image": "/menu/products/Extras/Extra_Fries.png"
         },
         {
           "id": "ilave-fume-et",
@@ -170,12 +248,12 @@
             "tr": "İlave Füme Et",
             "en": "Extra Smoked Meat"
           },
-          "price": 80,
+          "price": 90,
           "description": {
             "tr": "Hamburgerin içine ekstra",
             "en": "Extra add-in for the burger"
           },
-          "image": ""
+          "image": "/menu/products/Extras/füme_et.png"
         },
         {
           "id": "sogan-halkasi",
@@ -188,7 +266,7 @@
             "tr": "10 adet soğan halkası, 150 gram kajun baharatlı patates kızartması",
             "en": "10 onion rings, 150 grams of cajun seasoned fries"
           },
-          "image": ""
+          "image": "/menu/products/Extras/Extra_Onion_Ring.png"
         },
         {
           "id": "ilave-kuru-et",
@@ -196,12 +274,12 @@
             "tr": "İlave Kuru Et",
             "en": "Extra Dried Meat"
           },
-          "price": 80,
+          "price": 90,
           "description": {
             "tr": "Hamburgerin içine ekstra",
             "en": "Extra add-in for the burger"
           },
-          "image": ""
+          "image": "/menu/products/Extras/kuru_et.png"
         }
       ]
     },
@@ -223,7 +301,7 @@
             "tr": "",
             "en": ""
           },
-          "image": ""
+          "image": "/menu/products/Drinks/cola.png"
         },
         {
           "id": "fanta",
@@ -236,7 +314,7 @@
             "tr": "",
             "en": ""
           },
-          "image": ""
+          "image": "/menu/products/Drinks/fanta.png"
         },
         {
           "id": "sprite",
@@ -249,7 +327,7 @@
             "tr": "",
             "en": ""
           },
-          "image": ""
+          "image": "/menu/products/Drinks/sprite.png"
         },
         {
           "id": "fuse-tea",
@@ -262,7 +340,7 @@
             "tr": "",
             "en": ""
           },
-          "image": ""
+          "image": "/menu/products/Drinks/fuse_tea.jpg"
         },
         {
           "id": "buyuk-ayran",
@@ -275,7 +353,7 @@
             "tr": "",
             "en": ""
           },
-          "image": ""
+          "image": "/menu/products/Drinks/ayran.jpg"
         },
         {
           "id": "soda",
@@ -288,7 +366,7 @@
             "tr": "",
             "en": ""
           },
-          "image": ""
+          "image": "/menu/products/Drinks/soda.png"
         },
         {
           "id": "meyveli-soda",
@@ -301,7 +379,7 @@
             "tr": "",
             "en": ""
           },
-          "image": ""
+          "image": "/menu/products/Drinks/meyveli-soda.png"
         },
         {
           "id": "su",
@@ -314,7 +392,7 @@
             "tr": "",
             "en": ""
           },
-          "image": ""
+          "image": "/menu/products/Drinks/su.png"
         }
       ]
     }
