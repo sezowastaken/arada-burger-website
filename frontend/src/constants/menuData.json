@@ -13,10 +13,10 @@
             "tr": "Marmaris Burger",
             "en": "Marmaris Burger"
           },
-          "price": 519,
+          "price": 520,
           "description": {
-            "tr": "Burger köftesi, cheddar peyniri, trüf mayo, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
-            "en": "Burger patty, cheddar cheese, truffle mayo, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
+            "tr": "150 gr Burger köftesi, cheddar peyniri, trüf mayo, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
+            "en": "150 gr Burger patty, cheddar cheese, truffle mayo, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
           },
           "image": "/menu/products/Marmaris_Burger.png"
         },
@@ -26,10 +26,10 @@
             "tr": "Datça Burger",
             "en": "Datça Burger"
           },
-          "price": 569,
+          "price": 570,
           "description": {
-            "tr": "Burger köftesi, cheddar peyniri, közlenmiş patlıcan, közlenmiş kapya biber, karamelize soğan, iceberg marul. (2 soğan halkası, kajun patates)",
-            "en": "Burger patty, cheddar cheese, roasted eggplant, roasted capia pepper, caramelized onion, iceberg lettuce. (2 onion rings, cajun fries)"
+            "tr": "150 gr Burger köftesi, cheddar peyniri, közlenmiş patlıcan, közlenmiş kapya biber, karamelize soğan, iceberg marul. (2 soğan halkası, kajun patates)",
+            "en": "150 gr Burger patty, cheddar cheese, roasted eggplant, roasted capia pepper, caramelized onion, iceberg lettuce. (2 onion rings, cajun fries)"
           },
           "image": "/menu/products/Datça_Burger.png"
         },
@@ -39,10 +39,10 @@
             "tr": "Göcek Burger",
             "en": "Göcek Burger"
           },
-          "price": 549,
+          "price": 550,
           "description": {
-            "tr": "Burger köftesi, mantar taneli krema, cheddar peyniri, trüf cheese sos, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
-            "en": "Burger patty, mushroom cream with mushroom pieces, cheddar cheese, truffle cheese sauce, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
+            "tr": "150 gr Burger köftesi, mantar taneli krema, cheddar peyniri, trüf cheese sos, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
+            "en": "150 gr Burger patty, mushroom cream with mushroom pieces, cheddar cheese, truffle cheese sauce, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
           },
           "image": "/menu/products/Göcek_Burger.png"
         },
@@ -52,10 +52,10 @@
             "tr": "Selimiye Burger",
             "en": "Selimiye Burger"
           },
-          "price": 589,
+          "price": 600,
           "description": {
-            "tr": "Burger köftesi, füme kaburga eti, trüf cheese sos, turşu relish, iceberg marul ve marul parçaları. (2 soğan halkası, kajun patates)",
-            "en": "Burger patty, smoked rib meat, truffle cheese sauce, pickle relish, iceberg lettuce and lettuce pieces. (2 onion rings, cajun fries)"
+            "tr": "150 gr Burger köftesi, füme kaburga eti, trüf cheese sos, turşu relish, iceberg marul ve marul parçaları. (2 soğan halkası, kajun patates)",
+            "en": "150 gr Burger patty, smoked rib meat, truffle cheese sauce, pickle relish, iceberg lettuce and lettuce pieces. (2 onion rings, cajun fries)"
           },
           "image": "/menu/products/Selimiye_Burger.png"
         },
@@ -65,10 +65,10 @@
             "tr": "Bozburun Burger",
             "en": "Bozburun Burger"
           },
-          "price": 589,
+          "price": 590,
           "description": {
-            "tr": "Burger köftesi, tütsülenmiş balkan eti, cheddar peyniri, mor soğan, trüf mayonez, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
-            "en": "Burger patty, smoked Balkan meat, cheddar cheese, red onion, truffle mayonnaise, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
+            "tr": "150 gr Burger köftesi, tütsülenmiş balkan eti, cheddar peyniri, mor soğan, trüf mayonez, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
+            "en": "150 gr Burger patty, smoked Balkan meat, cheddar cheese, red onion, truffle mayonnaise, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
           },
           "image": "/menu/products/Bozburun_Burger.png"
         },
@@ -78,12 +78,51 @@
             "tr": "Bayır Burger",
             "en": "Bayır Burger"
           },
-          "price": 549,
+          "price": 550,
           "description": {
-            "tr": "Burger köftesi, tereyağında kavrulmuş Datça badem, özel acı sos, cheddar peyniri, trüf sos, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
-            "en": "Burger patty, butter-roasted Datça almonds, special hot sauce, cheddar cheese, truffle sauce, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
+            "tr": "150 gr Burger köftesi, tereyağında kavrulmuş Datça badem, özel acı sos, cheddar peyniri, trüf sos, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
+            "en": "150 gr Burger patty, butter-roasted Datça almonds, special hot sauce, cheddar cheese, truffle sauce, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
           },
           "image": "/menu/products/Bayır_Burger.png"
+        },
+        {
+          "id": "islak-hamburger-tekli",
+          "name": {
+            "tr": "Islak Hamburger",
+            "en": "Wet Burger"
+          },
+          "price": 130,
+          "description": {
+            "tr": "Burger köftesi, özel domates soslu yumuşak hamburger ekmeği.",
+            "en": "Burger patty, soft burger bun with special tomato sauce."
+          },
+          "image": "/menu/products/Islak_Hamburger_1.png"
+        },
+        {
+          "id": "islak-hamburger-uclu",
+          "name": {
+            "tr": "3'lü Islak Hamburger",
+            "en": "3-Piece Wet Burger"
+          },
+          "price": 130,
+          "description": {
+            "tr": "Burger köftesi, özel domates soslu yumuşak hamburger ekmeği.",
+            "en": "Burger patty, soft burger bun with special tomato sauce."
+          },
+          "image": "/menu/products/Islak_Hamburger_3.png"
+        },
+        {
+          "id": "islak-hamburger-besli",
+          "name": {
+            "tr": "5'li Islak Hamburger",
+            "en": "5-Piece Wet Burger"
+          },
+          "price": 130,
+          "description": {
+            "tr": "Burger köftesi, özel domates soslu yumuşak hamburger ekmeği.",
+            "en": "Burger patty, soft burger bun with special tomato sauce."
+          },
+          "image": "/menu/products/Islak_Hamburger_5.png"
         }
       ]
     },
@@ -100,7 +139,7 @@
             "tr": "Söğüt Burger",
             "en": "Söğüt Burger"
           },
-          "price": 469,
+          "price": 500,
           "description": {
             "tr": "Çıtır tavuk burger, cheddar peyniri, özel happy sos, domates, turşu, iceberg marul. (2 soğan halkası, kajun patates)",
             "en": "Crispy chicken burger, cheddar cheese, special happy sauce, tomato, pickles, iceberg lettuce. (2 onion rings, cajun fries)"
@@ -113,7 +152,7 @@
             "tr": "Mimaras Burger",
             "en": "Mimaras Burger"
           },
-          "price": 409,
+          "price": 410,
           "description": {
             "tr": "Çıtır tavuk burger köftesi, burger sos, ballı hardal, iceberg parçalı mayonez, marul, turşu. (150 gr. kajun patates)",
             "en": "Crispy chicken burger patty, burger sauce, honey mustard, chunky iceberg mayonnaise, lettuce, pickles. (150 g cajun fries)"
@@ -126,7 +165,7 @@
             "tr": "Knidos Burger",
             "en": "Knidos Burger"
           },
-          "price": 459,
+          "price": 460,
           "description": {
             "tr": "Çıtır tavuk parçaları (Nashville hot soslu), turşu, marul, acılı mayo, burger sos. (150 gr. kajun patates)",
             "en": "Crispy chicken pieces (with Nashville hot sauce), pickles, lettuce, spicy mayo, burger sauce. (150 g cajun fries)"
@@ -139,7 +178,7 @@
             "tr": "Kaunos Burger",
             "en": "Kaunos Burger"
           },
-          "price": 469,
+          "price": 470,
           "description": {
             "tr": "Çıtır tavuk parçaları, smoky mayonez, karamelize soğan, cheddar, marul, turşu. (150 gr. kajun patates)",
             "en": "Crispy chicken pieces, smoky mayonnaise, caramelized onion, cheddar, lettuce, pickles. (150 g cajun fries)"
@@ -152,7 +191,7 @@
             "tr": "Kleopatra Burger",
             "en": "Kleopatra Burger"
           },
-          "price": 459,
+          "price": 460,
           "description": {
             "tr": "Çıtır tavuk parçaları, pancarlı garlic mayonez, mor lahana coleslaw. (150 gr. kajun patates)",
             "en": "Crispy chicken pieces, beetroot garlic mayonnaise, purple cabbage coleslaw. (150 g cajun fries)"
@@ -165,7 +204,7 @@
             "tr": "Nimara Burger",
             "en": "Nimara Burger"
           },
-          "price": 479,
+          "price": 480,
           "description": {
             "tr": "Çıtır tavuk parçaları, cheddar sos, 2 dilim cheddar, marul, iceberg parçalı mayonez, çıtır soğan. (150 gr. kajun patates)",
             "en": "Crispy chicken pieces, cheddar sauce, 2 slices of cheddar, lettuce, chunky iceberg mayonnaise, crispy onion. (150 g cajun fries)"
@@ -187,7 +226,7 @@
             "tr": "Turgut Hotdog",
             "en": "Turgut Hotdog"
           },
-          "price": 469,
+          "price": 470,
           "description": {
             "tr": "Dana frankfurter sosis, turşu, ketçap, mayonez, mor soğan, 2 soğan halkası, kajun patates",
             "en": "Beef frankfurter sausage, pickles, ketchup, mayonnaise, red onion, 2 onion rings, cajun fries"
@@ -200,7 +239,7 @@
             "tr": "Aksaz Hotdog",
             "en": "Aksaz Hotdog"
           },
-          "price": 469,
+          "price": 470,
           "description": {
             "tr": "Dana frankfurter sosis, karamelize soğan, ketçap, mayonez, hardal, 2 soğan halkası, kajun patates",
             "en": "Beef frankfurter sausage, caramelized onion, ketchup, mayonnaise, mustard, 2 onion rings, cajun fries"
@@ -213,7 +252,7 @@
             "tr": "Turunç Hotdog",
             "en": "Turunç Hotdog"
           },
-          "price": 469,
+          "price": 470,
           "description": {
             "tr": "Dana frankfurter sosis, Rus salatası, mısır, ketçap, 2 adet soğan halkası ve kajun patates",
             "en": "Beef frankfurter sausage, Russian salad, corn, ketchup, 2 onion rings and cajun fries"
@@ -296,7 +335,7 @@
             "tr": "Coca Kola",
             "en": "Coca Cola"
           },
-          "price": 70,
+          "price": 90,
           "description": {
             "tr": "",
             "en": ""
@@ -309,7 +348,7 @@
             "tr": "Fanta",
             "en": "Fanta"
           },
-          "price": 70,
+          "price": 90,
           "description": {
             "tr": "",
             "en": ""
@@ -322,7 +361,7 @@
             "tr": "Sprite",
             "en": "Sprite"
           },
-          "price": 70,
+          "price": 90,
           "description": {
             "tr": "",
             "en": ""
@@ -335,7 +374,7 @@
             "tr": "Fuse Tea (Limon, Şeftali)",
             "en": "Fuse Tea (Lemon, Peach)"
           },
-          "price": 70,
+          "price": 90,
           "description": {
             "tr": "",
             "en": ""
@@ -348,7 +387,7 @@
             "tr": "Büyük Ayran",
             "en": "Large Ayran"
           },
-          "price": 50,
+          "price": 60,
           "description": {
             "tr": "",
             "en": ""
@@ -374,7 +413,7 @@
             "tr": "Meyveli Soda",
             "en": "Fruit Soda"
           },
-          "price": 50,
+          "price": 40,
           "description": {
             "tr": "",
             "en": ""
