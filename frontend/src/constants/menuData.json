@@ -28,8 +28,8 @@
           },
           "price": 570,
           "description": {
-            "tr": "150 gr Burger köftesi, cheddar peyniri, közlenmiş patlıcan, közlenmiş kapya biber, karamelize soğan, iceberg marul. (2 soğan halkası, kajun patates)",
-            "en": "150 gr Burger patty, cheddar cheese, roasted eggplant, roasted capia pepper, caramelized onion, iceberg lettuce. (2 onion rings, cajun fries)"
+            "tr": "150 gr Burger köftesi, tereyağında kavrulmuş Datça badem, özel acı sos, cheddar peyniri, trüf sos, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
+            "en": "150 gr Burger patty, butter-roasted Datça almonds, special hot sauce, cheddar cheese, truffle sauce, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"    
           },
           "image": "/menu/products/Datça_Burger.png"
         },
@@ -80,8 +80,8 @@
           },
           "price": 550,
           "description": {
-            "tr": "150 gr Burger köftesi, tereyağında kavrulmuş Datça badem, özel acı sos, cheddar peyniri, trüf sos, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
-            "en": "150 gr Burger patty, butter-roasted Datça almonds, special hot sauce, cheddar cheese, truffle sauce, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
+            "tr": "150 gr Burger köftesi, cheddar peyniri, közlenmiş patlıcan, közlenmiş kapya biber, karamelize soğan, iceberg marul. (2 soğan halkası, kajun patates)",
+            "en": "150 gr Burger patty, cheddar cheese, roasted eggplant, roasted capia pepper, caramelized onion, iceberg lettuce. (2 onion rings, cajun fries)"
           },
           "image": "/menu/products/Bayır_Burger.png"
         },
@@ -104,7 +104,7 @@
             "tr": "3'lü Islak Hamburger",
             "en": "3-Piece Wet Burger"
           },
-          "price": 130,
+          "price": 370,
           "description": {
             "tr": "Burger köftesi, özel domates soslu yumuşak hamburger ekmeği.",
             "en": "Burger patty, soft burger bun with special tomato sauce."
@@ -117,7 +117,7 @@
             "tr": "5'li Islak Hamburger",
             "en": "5-Piece Wet Burger"
           },
-          "price": 130,
+          "price": 600,
           "description": {
             "tr": "Burger köftesi, özel domates soslu yumuşak hamburger ekmeği.",
             "en": "Burger patty, soft burger bun with special tomato sauce."
@@ -300,7 +300,7 @@
             "tr": "Soğan Halkası",
             "en": "Onion Rings"
           },
-          "price": 250,
+          "price": 270,
           "description": {
             "tr": "10 adet soğan halkası, 150 gram kajun baharatlı patates kızartması",
             "en": "10 onion rings, 150 grams of cajun seasoned fries"
