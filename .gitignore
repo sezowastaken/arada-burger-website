@@ -10,6 +10,7 @@ out/
 # Production Build
 dist/
 build/
+*.tsbuildinfo
 
 # Debug & Logs
 npm-debug.log*

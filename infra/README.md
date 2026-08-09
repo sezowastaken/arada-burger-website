@@ -1,22 +1,22 @@
 # Infrastructure
 
-Docker Compose stack for local development (and reusable as a base for VPS deployment).
+Reserved for future infrastructure/deployment configuration (e.g. `nginx`,
+VPS deployment config) — not yet added.
 
-Currently runs:
-- `postgres` — PostgreSQL 16, persisted in a named volume (`postgres_data`)
-- `backend` — the Fastify API, built from `../backend/Dockerfile`
+The local development Docker Compose stack (`postgres`, `backend`,
+`frontend`) lives at the repo root: see `../docker-compose.yml` and
+`../.env.example`.
 
-`admin` and `nginx` will be added to this same stack later — not yet.
-
-## Usage
+## Fresh development setup
 
 ```bash
-cd infra
-cp .env.example .env   # then edit POSTGRES_PASSWORD, etc.
-docker compose up --build
+# from the repo root
+cp .env.example .env   # first time only
+docker compose up -d   # starts postgres, then backend (auto-migrates), then frontend
+cd backend && npm run db:seed   # one-time: populate categories/products
 ```
 
-- Backend: http://localhost:4000/health
-- PostgreSQL: localhost:5432 (or `POSTGRES_PORT` if overridden)
-
-Stop with `docker compose down` (add `-v` to also drop the `postgres_data` volume — this deletes all data).
+The `backend` container runs pending Drizzle migrations automatically on
+every start (safe/idempotent — already-applied migrations are skipped) before
+starting the server, so the schema is always up to date. Seeding is a
+separate, explicit step and is never run automatically.

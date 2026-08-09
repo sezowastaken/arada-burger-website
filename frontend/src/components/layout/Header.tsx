@@ -10,6 +10,10 @@ const desktopNavLinks = [
   { href: "/about", label: { tr: "Hakkımızda", en: "About" } },
 ];
 
+// Reserved for a future feature — not shown yet. Flip to true to re-enable
+// (it's still non-functional either way; see aria-disabled below).
+const SHOW_LOGIN_BUTTON = false;
+
 const mobileNavLinks = [
   { href: "", label: { tr: "Ana Sayfa", en: "Home" } },
   { href: "/menu", label: { tr: "Menü", en: "Menu" } },
@@ -110,9 +114,16 @@ export default function Header({ lang: initialLang }: { lang: "tr" | "en" }) {
               </Link>
             </div>
 
-            <button className="hidden rounded-full bg-primary px-8 py-3 font-display text-[10px] font-bold uppercase tracking-[0.15em] text-white sticker-shadow transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 sm:block lg:text-xs">
-              {lang === "tr" ? "Giriş" : "Login"}
-            </button>
+            {/* Reserved for a future feature — kept but not rendered for now. */}
+            {SHOW_LOGIN_BUTTON && (
+              <button
+                type="button"
+                aria-disabled="true"
+                className="hidden rounded-full bg-primary px-8 py-3 font-display text-[10px] font-bold uppercase tracking-[0.15em] text-white sticker-shadow transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 sm:block lg:text-xs"
+              >
+                {lang === "tr" ? "Giriş" : "Login"}
+              </button>
+            )}
           </div>
         </div>
       </header>

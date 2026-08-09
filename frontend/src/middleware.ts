@@ -33,7 +33,7 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Skip all internal paths (_next)
-    '/((?!_next|api|brand|menu|images|favicon.ico).*)',
+    // Skip all internal paths (_next) and the admin panel (not locale-prefixed)
+    '/((?!_next|api|brand|menu|images|favicon.ico|admin).*)',
   ],
 }

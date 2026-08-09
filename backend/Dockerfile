@@ -23,6 +23,11 @@ WORKDIR /app
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY package.json ./
+COPY drizzle ./drizzle
 USER node
 EXPOSE 4000
-CMD ["node", "dist/server.js"]
+# Apply pending migrations, then start the server. Migrations are idempotent
+# (tracked via drizzle's journal table), so this is safe to run on every
+# container start. If migration fails, the container exits non-zero instead
+# of starting the server against an unmigrated/broken schema.
+CMD ["sh", "-c", "node dist/db/migrate.js && node dist/server.js"]

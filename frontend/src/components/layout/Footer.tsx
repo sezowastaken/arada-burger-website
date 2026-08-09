@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Footer({ lang }: { lang: "tr" | "en" }) {
   const currentYear = new Date().getFullYear();
@@ -73,11 +74,17 @@ export default function Footer({ lang }: { lang: "tr" | "en" }) {
 
         <div className="checkerboard my-8 opacity-10"></div>
 
-        <div className="flex justify-center items-center text-center text-xs font-bold uppercase tracking-widest opacity-40">
+        <div className="flex flex-col items-center justify-center gap-2 text-center text-xs font-bold uppercase tracking-widest opacity-40">
           <p>
             © {currentYear} Arada Burger.{" "}
             {lang === "tr" ? "Tüm Hakları Saklıdır." : "All Rights Reserved."}
           </p>
+          <Link
+            href="/admin"
+            className="text-[10px] font-normal normal-case tracking-normal text-on_surface/40 opacity-70 transition-opacity hover:opacity-100 hover:underline"
+          >
+            {lang === "tr" ? "Personel Girişi" : "Staff Login"}
+          </Link>
         </div>
       </div>
     </footer>

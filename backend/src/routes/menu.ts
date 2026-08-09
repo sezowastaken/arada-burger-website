@@ -29,6 +29,7 @@ export async function menuRoutes(app: FastifyInstance) {
           description: { tr: product.descriptionTr, en: product.descriptionEn },
           price: Number(product.price),
           image: product.imagePath,
+          isActive: product.isActive,
           isAvailable: product.isAvailable,
           sortOrder: product.sortOrder,
         })),
@@ -56,6 +57,7 @@ export async function menuRoutes(app: FastifyInstance) {
       description: { tr: product.descriptionTr, en: product.descriptionEn },
       price: Number(product.price),
       image: product.imagePath,
+      isActive: product.isActive,
       isAvailable: product.isAvailable,
     };
   });

@@ -1,5 +1,11 @@
-import "dotenv/config";
+import { config } from "dotenv";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "drizzle-kit";
+
+// Loaded relative to this file (not process.cwd()) so `npm run db:migrate` /
+// `db:generate` work the same regardless of where they're invoked from.
+config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.env") });
 
 export default defineConfig({
   schema: "./src/db/schema.ts",
