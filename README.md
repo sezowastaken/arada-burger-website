@@ -21,3 +21,117 @@ This project aims to provide Arada Burger with a modern yet retro-inspired digit
 2. **Landing Page:** Introducing the Arada Burger brand and vibe.
 3. **Location & About:** Providing essential business information.
 
+
+```
+arada-burger-website
+├─ backend
+│  └─ README.md
+├─ DESIGN.md
+├─ docs
+│  ├─ brand
+│  │  ├─ asset-inventory.md
+│  │  └─ brand-guidelines.md
+│  ├─ notes
+│  │  └─ working-rules.md
+│  └─ product
+│     ├─ project-scope.md
+│     └─ roadmap.md
+├─ frontend
+│  ├─ next-env.d.ts
+│  ├─ next.config.mjs
+│  ├─ package-lock.json
+│  ├─ package.json
+│  ├─ postcss.config.js
+│  ├─ public
+│  │  ├─ brand
+│  │  │  ├─ logo
+│  │  │  │  └─ logo_background_removed.png
+│  │  │  └─ mascots
+│  │  │     ├─ burger_maskot.png
+│  │  │     ├─ hotdog_maskot.png
+│  │  │     ├─ patates_maskotu.png
+│  │  │     └─ soda_maskot.png
+│  │  ├─ images
+│  │  │  ├─ burger_favicon.png
+│  │  │  ├─ eyes_favicon.png
+│  │  │  ├─ favicon_burger.png
+│  │  │  ├─ product_card_frame.png
+│  │  │  ├─ vintage_frame.png
+│  │  │  └─ vintage_frame_2.png
+│  │  └─ menu
+│  │     ├─ extras
+│  │     │  └─ CokeCan-Photoroom.png
+│  │     ├─ pdf
+│  │     │  └─ Arada_Burger_Menu_TR.pdf
+│  │     └─ products
+│  │        ├─ Aksaz_Hotdog.png
+│  │        ├─ Bayır_Burger.png
+│  │        ├─ Bozburun_Burger.png
+│  │        ├─ Datça_Burger.png
+│  │        ├─ Drinks
+│  │        │  ├─ ayran.jpg
+│  │        │  ├─ cola.png
+│  │        │  ├─ fanta.png
+│  │        │  ├─ fuse_tea.jpg
+│  │        │  ├─ meyveli-soda.png
+│  │        │  ├─ soda.png
+│  │        │  ├─ sprite.png
+│  │        │  └─ su.png
+│  │        ├─ Extras
+│  │        │  ├─ Extra_Fries.png
+│  │        │  ├─ Extra_Onion_Ring.png
+│  │        │  ├─ füme_et.png
+│  │        │  └─ kuru_et.png
+│  │        ├─ Göcek_Burger.png
+│  │        ├─ Islak_Hamburger_1.png
+│  │        ├─ Islak_Hamburger_3.png
+│  │        ├─ Islak_Hamburger_5.png
+│  │        ├─ Kaunos_Burger.png
+│  │        ├─ Kleopatra_Burger.png
+│  │        ├─ Knidos_Burger.png
+│  │        ├─ Marmaris_Burger.png
+│  │        ├─ Mimaras_Burger.png
+│  │        ├─ Nimara_Burger.png
+│  │        ├─ Old
+│  │        │  ├─ Kaunos_Burger.png
+│  │        │  ├─ Kleopatra_Burger.png
+│  │        │  ├─ Knidos_Burger.png
+│  │        │  ├─ Mimaras_Burger.png
+│  │        │  ├─ Nimara_Burger.png
+│  │        │  └─ Söğüt_Burger.png
+│  │        ├─ Selimiye_Burger.png
+│  │        ├─ Söğüt_Burger.png
+│  │        ├─ Turgut_Hotdog.png
+│  │        └─ Turunç_Hotdog.png
+│  ├─ README.md
+│  ├─ src
+│  │  ├─ app
+│  │  │  ├─ layout.tsx
+│  │  │  ├─ page.tsx
+│  │  │  └─ [lang]
+│  │  │     ├─ layout.tsx
+│  │  │     ├─ location
+│  │  │     │  └─ page.tsx
+│  │  │     ├─ menu
+│  │  │     │  ├─ MenuClient.tsx
+│  │  │     │  └─ page.tsx
+│  │  │     └─ page.tsx
+│  │  ├─ components
+│  │  │  └─ ui
+│  │  │     ├─ CategoryFilter.tsx
+│  │  │     ├─ MobileProductAccordion.tsx
+│  │  │     └─ ProductCard.tsx
+│  │  ├─ constants
+│  │  │  └─ menuData.json
+│  │  ├─ middleware.ts
+│  │  └─ styles
+│  │     └─ globals.css
+│  ├─ tailwind.config.js
+│  └─ tsconfig.json
+├─ GEMINI.md
+├─ infra
+│  └─ README.md
+├─ README.md
+└─ TECHNICAL_STACK.md
+
+```
