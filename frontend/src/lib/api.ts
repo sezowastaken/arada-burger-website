@@ -1,4 +1,11 @@
+import fallbackMenu from "@/constants/menuData.json";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+// fetch() has no default timeout. Without this, an API that accepts the
+// connection but never answers would hang the page render instead of
+// falling back to the bundled menu.
+const MENU_TIMEOUT_MS = 2500;
 
 export interface LocalizedText {
   tr: string;
@@ -29,14 +36,57 @@ export interface MenuResponse {
   categories: MenuCategory[];
 }
 
-export async function fetchMenu(): Promise<MenuResponse> {
-  const res = await fetch(`${API_URL}/api/menu`, { cache: "no-store" });
+export interface MenuResult extends MenuResponse {
+  /** "fallback" means the API was unreachable and prices may be stale. */
+  source: "api" | "fallback";
+}
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch menu (${res.status})`);
+/**
+ * PostgreSQL is the source of truth for the menu; `menuData.json` is only an
+ * emergency fallback so the public site keeps rendering if the API is down.
+ */
+export async function fetchMenu(): Promise<MenuResult> {
+  try {
+    const res = await fetch(`${API_URL}/api/menu`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(MENU_TIMEOUT_MS),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch menu (${res.status})`);
+    }
+
+    const data: MenuResponse = await res.json();
+    return { categories: data.categories, source: "api" };
+  } catch (error) {
+    console.error("[menu] API unreachable, serving bundled fallback menu:", error);
+    return { categories: fallbackMenuCategories(), source: "fallback" };
   }
+}
 
-  return res.json();
+/**
+ * Reshapes the bundled JSON into the API's own shape so callers only ever
+ * handle one format. Ids here are positional, not database ids — the JSON has
+ * none; `slug` is the stable identifier in both modes.
+ */
+function fallbackMenuCategories(): MenuCategory[] {
+  return fallbackMenu.categories.map((category, categoryIndex) => ({
+    id: categoryIndex,
+    slug: category.id,
+    name: category.name,
+    sortOrder: categoryIndex,
+    products: category.items.map((item, itemIndex) => ({
+      id: itemIndex,
+      slug: item.id,
+      name: item.name,
+      description: item.description,
+      price: item.price,
+      image: item.image ?? "",
+      isActive: true,
+      isAvailable: true,
+      sortOrder: itemIndex,
+    })),
+  }));
 }
 
 /* ---------------------------------------------------------------------------

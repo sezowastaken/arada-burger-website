@@ -1,21 +1,20 @@
 import { notFound } from "next/navigation";
-import menuData from "@/constants/menuData.json";
+import { fetchMenu } from "@/lib/api";
 import MenuClient from "./MenuClient";
 
 type Lang = "tr" | "en";
 
-type LocalizedMenuItem = {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  image: string;
-};
-
 type LocalizedMenuCategory = {
   id: string;
   name: string;
-  items: LocalizedMenuItem[];
+  items: {
+    id: string;
+    name: string;
+    price: number;
+    description: string;
+    image: string;
+    isAvailable: boolean;
+  }[];
 };
 
 export default async function MenuPage({
@@ -31,50 +30,22 @@ export default async function MenuPage({
 
   const validLang = lang as Lang;
 
-  const sourceCategories = menuData.categories.map((category) => ({
-    id: category.id,
+  const { categories } = await fetchMenu();
+
+  // Category order, names and membership all come from the database — adding a
+  // category in the admin panel must not require a code change here.
+  const localizedCategories: LocalizedMenuCategory[] = categories.map((category) => ({
+    id: category.slug,
     name: category.name[validLang],
-    items: category.items.map((item) => ({
-      id: String(item.id),
-      name: item.name[validLang],
-      price: item.price,
-      description: item.description[validLang],
-      image: item.image || "",
+    items: category.products.map((product) => ({
+      id: product.slug,
+      name: product.name[validLang],
+      price: product.price,
+      description: product.description[validLang],
+      image: product.image || "",
+      isAvailable: product.isAvailable,
     })),
   }));
-
-  const getItems = (...ids: string[]) =>
-    sourceCategories
-      .filter((category) => ids.includes(category.id))
-      .flatMap((category) => category.items);
-
-  const localizedCategories: LocalizedMenuCategory[] = [
-    {
-      id: "et-burger",
-      name: validLang === "tr" ? "ET BURGER" : "BEEF BURGER",
-      items: getItems("et-burgerler", "spesiyal-burgerler"),
-    },
-    {
-      id: "tavuk-burger",
-      name: validLang === "tr" ? "TAVUK BURGER" : "CHICKEN BURGER",
-      items: getItems("tavuk-burgerler"),
-    },
-    {
-      id: "hotdog",
-      name: validLang === "tr" ? "HOTDOG" : "HOTDOG",
-      items: getItems("hotdoglar"),
-    },
-    {
-      id: "ilave",
-      name: validLang === "tr" ? "İLAVE" : "EXTRAS",
-      items: getItems("ekstralar"),
-    },
-    {
-      id: "icecek",
-      name: validLang === "tr" ? "İÇECEK" : "DRINKS",
-      items: getItems("icecekler"),
-    },
-  ];
 
   const filterTitle = validLang === "tr" ? "KATEGORİLER" : "CATEGORIES";
   const allLabel = validLang === "tr" ? "TÜMÜ" : "ALL";

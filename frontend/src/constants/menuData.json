@@ -3,8 +3,8 @@
     {
       "id": "et-burgerler",
       "name": {
-        "tr": "Et Burgerler",
-        "en": "Beef Burgers"
+        "tr": "Et Burger",
+        "en": "Beef Burger"
       },
       "items": [
         {
@@ -129,8 +129,8 @@
     {
       "id": "tavuk-burgerler",
       "name": {
-        "tr": "Tavuk Burgerler",
-        "en": "Chicken Burgers"
+        "tr": "Tavuk Burger",
+        "en": "Chicken Burger"
       },
       "items": [
         {
@@ -264,7 +264,7 @@
     {
       "id": "ekstralar",
       "name": {
-        "tr": "İlaveler",
+        "tr": "İlave",
         "en": "Extras"
       },
       "items": [
@@ -325,7 +325,7 @@
     {
       "id": "icecekler",
       "name": {
-        "tr": "İçecekler",
+        "tr": "İçecek",
         "en": "Drinks"
       },
       "items": [

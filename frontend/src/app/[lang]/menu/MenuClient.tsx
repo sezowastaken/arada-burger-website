@@ -13,6 +13,7 @@ interface MenuItem {
   price: number;
   description: string;
   image: string;
+  isAvailable: boolean;
 }
 
 interface MenuCategory {
@@ -54,60 +55,67 @@ export default function MenuClient({
 
     const isTurkish = allLabel === "TÜMÜ";
 
+  const soldOutLabel = isTurkish ? "TÜKENDİ" : "SOLD OUT";
+
+  /**
+   * Mascots and compact labels are keyed by the database category slug. A
+   * category the admin adds later simply falls back to the logo and its own
+   * name rather than rendering as a blank circle.
+   */
   const getMobileCategoryAsset = (id: string) => {
     switch (id) {
       case "all":
         return "/brand/logo/logo_background_removed.png";
-      case "et-burger":
+      case "et-burgerler":
         return "/brand/mascots/burger_maskot.png";
-      case "tavuk-burger":
+      case "tavuk-burgerler":
         return "/brand/mascots/burger_maskot.png";
-      case "hotdog":
+      case "hotdoglar":
         return "/brand/mascots/hotdog_maskot.png";
-      case "ilave":
+      case "ekstralar":
         return "/brand/mascots/patates_maskotu.png";
-      case "icecek":
+      case "icecekler":
         return "/brand/mascots/soda_maskot.png";
       default:
         return "/brand/logo/logo_background_removed.png";
     }
   };
 
-  const getCompactMobileLabel = (id: string) => {
+  const getCompactMobileLabel = (id: string, label: string) => {
     if (isTurkish) {
       switch (id) {
         case "all":
           return "TÜMÜ";
-        case "et-burger":
+        case "et-burgerler":
           return "ET";
-        case "tavuk-burger":
+        case "tavuk-burgerler":
           return "TAVUK";
-        case "hotdog":
+        case "hotdoglar":
           return "HOTDOG";
-        case "ilave":
+        case "ekstralar":
           return "İLAVE";
-        case "icecek":
+        case "icecekler":
           return "İÇECEK";
         default:
-          return "";
+          return label;
       }
     }
 
     switch (id) {
       case "all":
         return "ALL";
-      case "et-burger":
+      case "et-burgerler":
         return "BEEF";
-      case "tavuk-burger":
+      case "tavuk-burgerler":
         return "CHICKEN";
-      case "hotdog":
+      case "hotdoglar":
         return "HOTDOG";
-      case "ilave":
+      case "ekstralar":
         return "EXTRAS";
-      case "icecek":
+      case "icecekler":
         return "DRINKS";
       default:
-        return "";
+        return label;
     }
   };
 
@@ -133,24 +141,24 @@ export default function MenuClient({
       case "all":
         return "h-[56px] w-[56px] translate-x-0 translate-y-0 scale-100";
 
-      case "et-burger":
+      case "et-burgerler":
         // İnek burger maskotu: optik olarak merkezde
         return "h-[84px] w-[84px] translate-x-0 translate-y-[2px] scale-[1.08]";
 
-      case "tavuk-burger":
+      case "tavuk-burgerler":
         // Tavuk burger maskotu: etiyle aynı durmalı
         return "h-[84px] w-[84px] translate-x-0 translate-y-[2px] scale-[1.08]";
 
-      case "hotdog":
-        // Sosisli maskotu: Asset'in doğal boşluğu nedeniyle sağa kayık duruyordu. 
+      case "hotdoglar":
+        // Sosisli maskotu: Asset'in doğal boşluğu nedeniyle sağa kayık duruyordu.
         // '-translate-x-[1px]' ile sola, 'translate-y-[3px]' ile aşağı merkezlendi.
         return "h-[86px] w-[86px] -translate-x-[1px] translate-y-[3px] scale-[1.05]";
 
-      case "ilave":
+      case "ekstralar":
         // Patates (Extras) maskotu: Optik ağırlığı yukarıdaydı, 'translate-y-[3px]' ile aşağı çekildi.
         return "h-[82px] w-[82px] translate-x-0 translate-y-[3px] scale-[1.08]";
 
-      case "icecek":
+      case "icecekler":
         // İçecek maskotu: 'translate-x-0' ve 'translate-y-[2px]' ile tam ortaya alındı.
         return "h-[78px] w-[78px] translate-x-0 translate-y-[2px] scale-[1.05]";
 
@@ -216,7 +224,7 @@ export default function MenuClient({
                 {filterCategories.map((category) => {
                   const isActive = activeCategory === category.id;
                   const asset = getMobileCategoryAsset(category.id);
-                  const compactLabel = getCompactMobileLabel(category.id);
+                  const compactLabel = getCompactMobileLabel(category.id, category.label);
                   const imageClass = getMobileCategoryImageClass(category.id);
 
                   return (
@@ -295,6 +303,8 @@ export default function MenuClient({
                                 name={item.name}
                                 price={`₺${item.price}`}
                                 description={item.description}
+                                isAvailable={item.isAvailable}
+                                soldOutLabel={soldOutLabel}
                               />
                             ))}
                           </div>
@@ -311,6 +321,8 @@ export default function MenuClient({
                             name={item.name}
                             price={`₺${item.price}`}
                             description={item.description}
+                            isAvailable={item.isAvailable}
+                            soldOutLabel={soldOutLabel}
                           />
                         ))}
                       </div>

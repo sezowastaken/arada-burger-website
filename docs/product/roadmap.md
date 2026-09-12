@@ -40,30 +40,36 @@ stack runs seamlessly locally — see M7 (auth) and M8 (deployment).
 
 ---
 
-## M1 — Connect the public menu to the database (next)
+## M1 — Connect the public menu to the database (done)
 
 *Goal: PostgreSQL becomes the single source of truth for the menu.*
 
-Today the admin panel reads and writes the database, but `/tr/menu` and
-`/en/menu` still render `frontend/src/constants/menuData.json`. This is the
-most important gap in the project.
+- [x] `/tr/menu` and `/en/menu` fetch `GET /api/menu`.
+- [x] The homepage "featured products" row reads the same source. It also read
+      `menuData.json`, so leaving it behind would have shown one price on the
+      homepage and another on `/menu` after any admin edit.
+- [x] `menuData.json` is an emergency fallback only.
+- [x] API timeout/failure falls back without breaking the page
+      (`AbortSignal.timeout`, 2.5s — `fetch` has no default timeout).
+- [x] `is_active = false` disappears from the public menu.
+- [x] `is_available = false` renders a "TÜKENDİ" / "SOLD OUT" ink stamp, with
+      the product shot desaturated and the mustard price pill muted.
+- [x] Category names, order and membership now come from the database; the
+      mobile category circles key off database slugs and fall back to the
+      category's own name instead of rendering blank.
+- [x] Verified end to end: price change, product create, deactivate, sold-out
+      toggle, and a backend outage.
 
-- [ ] `/tr/menu` and `/en/menu` fetch `GET /api/menu`.
-- [ ] `menuData.json` becomes an emergency fallback only.
-- [ ] Handle API timeout/failure by falling back, without breaking the page.
-- [ ] `is_active = false` disappears from the public menu.
-- [ ] `is_available = false` renders as "Tükendi" / "Sold Out".
-- [ ] Verify: change a price in admin → public menu reflects it.
-- [ ] Verify: add a product in admin → it appears on the public menu.
+The `spesiyal-burgerler` question turned out to be moot — no such category
+exists in the data; the reference in `menu/page.tsx` was dead code from an
+older structure. Categories mapped 1:1 to the five tabs already on the site,
+so nothing had to be merged.
 
-**Open question to settle during M1:** the menu page currently merges the
-`et-burgerler` and `spesiyal-burgerler` categories into a single "ET BURGER"
-tab in the UI. Either that grouping moves into the data (consolidate the
-categories) or the page keeps an explicit display-grouping layer. Decide once,
-then the category list is genuinely admin-controlled.
-
-`fetchMenu()` already exists in `frontend/src/lib/api.ts` and is unused — that
-is the starting point.
+**Follow-up carried into M2:** the fallback still serves whatever prices were
+last committed to `menuData.json`. With the backend stopped, the menu rendered
+a stale ₺600 for a product priced ₺675 in the database, and showed a sold-out
+product as available. A `db:export-menu` script that regenerates the JSON from
+the database would keep the fallback honest.
 
 ---
 
@@ -82,8 +88,22 @@ left:
 
 **2b — polish**
 - [ ] Real image upload, replacing the manual image-path field.
+- [ ] `db:export-menu` script so the emergency fallback is regenerated from the
+      database instead of drifting (carried over from M1).
 - [ ] Product form UI/UX polish.
 - [ ] Run the admin Products page through an Impeccable design pass.
+
+**Public-site defects found during M1** — pre-existing, not caused by the
+database migration, and worth fixing in this milestone's polish pass:
+
+- Mobile product titles clip Turkish diacritics. `MobileProductAccordion`'s
+  `h3` runs `line-height: 0.92` under `overflow: hidden`, so the dots on `Ö`
+  are cut off — "GÖCEK BURGER" renders as "GOCEK BURGER" on a phone. Long
+  names also clip horizontally ("MARMARİS" → "MARMARI").
+- Desktop product card descriptions are cut off mid-sentence at the bottom of
+  the card.
+- Nothing in the frontend honours `prefers-reduced-motion`, including the
+  framer-motion accordion transitions.
 
 ---
 
@@ -264,8 +284,8 @@ Post-MVP, in no particular order:
 ## Order of execution
 
 ```text
-now:              M1  public menu → DB
-then:             M2  menu polish → M3 analytics → M4 inventory/waste
+done:             M1  public menu → DB
+now:              M2  menu polish → M3 analytics → M4 inventory/waste
 when YepPos answers:  M5 orders → M6 dashboard/KPI
 before going live:    M7 auth → M8 VPS
 ```

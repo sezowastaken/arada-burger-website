@@ -8,6 +8,9 @@ type ProductCardProps = {
   name: string;
   price: string;
   description: string;
+  isAvailable?: boolean;
+  /** Required so a caller on the English site cannot silently fall back to Turkish. */
+  soldOutLabel: string;
   className?: string;
 };
 
@@ -33,13 +36,19 @@ export default function ProductCard({
   name,
   price,
   description,
+  isAvailable = true,
+  soldOutLabel,
   className = "",
 }: ProductCardProps) {
   const hasImage = Boolean(imageSrc && imageSrc.trim().length > 0);
 
   return (
     <article
-      className={`group relative flex aspect-[2/3] w-full max-w-[450px] flex-col overflow-hidden rounded-[48px] shadow-[6px_6px_20px_rgba(30,28,16,0.15)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[12px_12px_32px_rgba(30,28,16,0.25)] ${className}`}
+      className={`group relative flex aspect-[2/3] w-full max-w-[450px] flex-col overflow-hidden rounded-[48px] shadow-[6px_6px_20px_rgba(30,28,16,0.15)] transition-[transform,box-shadow] duration-500 ${
+        isAvailable
+          ? "hover:-translate-y-2 hover:shadow-[12px_12px_32px_rgba(30,28,16,0.25)]"
+          : ""
+      } ${className}`}
     >
       {/* Frame Background */}
       <div className="absolute inset-0 z-0">
@@ -72,7 +81,11 @@ export default function ProductCard({
           </div>
 
           {hasImage ? (
-            <div className="relative z-10 h-full w-full transition-transform duration-500 group-hover:scale-125">
+            <div
+              className={`relative z-10 h-full w-full transition-transform duration-500 ${
+                isAvailable ? "group-hover:scale-125" : "grayscale-[0.85] opacity-40"
+              }`}
+            >
               <Image
                 src={imageSrc}
                 alt={imageAlt}
@@ -87,6 +100,17 @@ export default function ProductCard({
               </span>
             </div>
           )}
+
+          {/* Stamped ink, not a sticker — so it carries no shadow. */}
+          {!isAvailable ? (
+            <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
+              {/* Sized like the card title (clamp + em padding) so it never
+                  outgrows the narrow three-column card and gets clipped. */}
+              <span className="max-w-full -rotate-[9deg] whitespace-nowrap border-[3px] border-double border-[#a60002] bg-[#fff9e7]/85 px-[0.8em] py-[0.45em] font-[family:var(--font-epilogue)] text-[clamp(0.7rem,1.05vw,1.25rem)] font-black uppercase leading-none tracking-[0.16em] text-[#a60002]">
+                {soldOutLabel}
+              </span>
+            </div>
+          ) : null}
         </div>
 
         {/* Checker Divider */}
@@ -100,7 +124,15 @@ export default function ProductCard({
             {name}
           </h3>
 
-          <div className="mt-3 rounded-full bg-[#f2a11a] px-5 py-1 font-[family:var(--font-epilogue)] text-[1.1rem] font-black text-[#a60002] shadow-[2px_2px_0px_#1e1c10]">
+          {/* Mustard is the promotional colour in this system; a product that
+              cannot be bought should not keep signalling with it. */}
+          <div
+            className={`mt-3 rounded-full px-5 py-1 font-[family:var(--font-epilogue)] text-[1.1rem] font-black ${
+              isAvailable
+                ? "bg-[#f2a11a] text-[#a60002] shadow-[2px_2px_0px_#1e1c10]"
+                : "bg-[#e8e2cf] text-[#1e1c10]/65"
+            }`}
+          >
             {price}
           </div>
 

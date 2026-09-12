@@ -14,8 +14,28 @@ type MobileProductAccordionProps = {
   name: string;
   price: string;
   description: string;
+  isAvailable?: boolean;
+  /** Required so a caller on the English site cannot silently fall back to Turkish. */
+  soldOutLabel: string;
   className?: string;
 };
+
+/** Stamped ink over the product shot — no shadow, because ink is not a sticker. */
+function SoldOutStamp({ label, compact = false }: { label: string; compact?: boolean }) {
+  return (
+    <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
+      <span
+        className={`-rotate-[9deg] border-double border-primary bg-background/85 font-display font-black uppercase leading-none text-primary ${
+          compact
+            ? "border-[2px] px-2 py-1 text-[0.64rem] tracking-[0.1em]"
+            : "border-[3px] px-5 py-2 text-[1.15rem] tracking-[0.18em]"
+        }`}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
 
 // "PowerPoint Morph" tadında sürtünmesiz organik yay fiziği:
 const layoutTransition: Transition = {
@@ -49,10 +69,20 @@ function MobileProductAccordion({
   name,
   price,
   description,
+  isAvailable = true,
+  soldOutLabel,
   className = "",
 }: MobileProductAccordionProps) {
   const [open, setOpen] = useState(false);
   const uid = useId();
+
+  // Mustard is the promotional colour in this system; a product that cannot be
+  // bought should not keep signalling with it.
+  const pricePillClass = isAvailable
+    ? "bg-[#f2a11a] text-primary shadow-[2px_2px_0px_#1e1c10]"
+    : "bg-surface_container_highest text-on_surface/65";
+
+  const productImageClass = isAvailable ? "" : "grayscale-[0.85] opacity-40";
 
   // Modal açıkken arkadaki body'nin kaymasını engelle:
   useEffect(() => {
@@ -126,7 +156,7 @@ function MobileProductAccordion({
                       src={imageSrc}
                       alt={imageAlt}
                       fill
-                      className="scale-[1.30] -translate-x-[2px] object-contain drop-shadow-[0_18px_20px_rgba(0,0,0,0.20)]"
+                      className={`scale-[1.30] -translate-x-[2px] object-contain drop-shadow-[0_18px_20px_rgba(0,0,0,0.20)] ${productImageClass}`}
                     />
                   </div>
                 ) : (
@@ -134,6 +164,7 @@ function MobileProductAccordion({
                     <span className="rounded-full bg-primary px-4 py-1 font-display text-xs font-black uppercase tracking-widest text-white">Arada</span>
                   </div>
                 )}
+                {!isAvailable ? <SoldOutStamp label={soldOutLabel} compact /> : null}
               </motion.div>
 
               {/* CONTENT WRAPPER (Compact) */}
@@ -164,7 +195,7 @@ function MobileProductAccordion({
                   <motion.span
                     layoutId={ids.price}
                     transition={layoutTransition}
-                    className="whitespace-nowrap rounded-full bg-[#f2a11a] px-4 py-1.5 font-display text-base font-black text-primary shadow-[2px_2px_0px_#1e1c10] sm:text-[1.05rem]"
+                    className={`whitespace-nowrap rounded-full px-4 py-1.5 font-display text-base font-black sm:text-[1.05rem] ${pricePillClass}`}
                   >
                     {price}
                   </motion.span>
@@ -234,7 +265,7 @@ function MobileProductAccordion({
                           src={imageSrc}
                           alt={imageAlt}
                           fill
-                          className="scale-[1.08] object-contain p-3 drop-shadow-[0_24px_36px_rgba(0,0,0,0.4)]"
+                          className={`scale-[1.08] object-contain p-3 drop-shadow-[0_24px_36px_rgba(0,0,0,0.4)] ${productImageClass}`}
                         />
                       </div>
                     ) : (
@@ -242,6 +273,7 @@ function MobileProductAccordion({
                         <span className="rounded-full bg-primary px-4 py-1 font-display text-xs font-black uppercase tracking-widest text-white">Arada</span>
                       </div>
                     )}
+                    {!isAvailable ? <SoldOutStamp label={soldOutLabel} /> : null}
                   </motion.div>
 
                   {/* CONTENT WRAPPER (Expanded) */}
@@ -261,7 +293,7 @@ function MobileProductAccordion({
                       <motion.span
                         layoutId={ids.price}
                         transition={layoutTransition}
-                        className="whitespace-nowrap rounded-full bg-[#f2a11a] px-4 py-1.5 font-display text-base font-black text-primary shadow-[2px_2px_0px_#1e1c10] sm:text-[1.05rem]"
+                        className={`whitespace-nowrap rounded-full px-4 py-1.5 font-display text-base font-black sm:text-[1.05rem] ${pricePillClass}`}
                       >
                         {price}
                       </motion.span>

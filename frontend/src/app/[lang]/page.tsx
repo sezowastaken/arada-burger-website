@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ProductCard from "../../components/ui/ProductCard";
-import menuData from "../../constants/menuData.json";
+import { fetchMenu } from "@/lib/api";
 
 type Lang = "tr" | "en";
 
@@ -26,11 +26,21 @@ export default async function Home({
 
   const validLang = lang as Lang;
 
-  const allItems = menuData.categories.flatMap((cat) => cat.items);
-  const featuredIds = ["selimiye-burger", "datca-burger", "aksaz-hotdog"];
-  const featuredProducts = featuredIds
-    .map((id) => allItems.find((item) => item.id === id))
-    .filter(Boolean) as typeof allItems;
+  // Same source as the menu page, so a price edited in the admin panel can
+  // never show one number here and another on /menu.
+  const { categories } = await fetchMenu();
+  const productBySlug = new Map(
+    categories.flatMap((category) => category.products).map((product) => [product.slug, product]),
+  );
+
+  // A featured product that gets deactivated is absent from the API response
+  // and simply drops out of this row.
+  const featuredSlugs = ["selimiye-burger", "datca-burger", "aksaz-hotdog"];
+  const featuredProducts = featuredSlugs
+    .map((slug) => productBySlug.get(slug))
+    .filter((product) => product !== undefined);
+
+  const soldOutLabel = validLang === "tr" ? "TÜKENDİ" : "SOLD OUT";
 
   const whyAradaItems =
     validLang === "tr"
@@ -239,12 +249,14 @@ export default async function Home({
                 <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
                   {featuredProducts.map((item) => (
                     <ProductCard
-                      key={item.id}
+                      key={item.slug}
                       imageSrc={item.image}
                       imageAlt={item.name[validLang]}
                       name={item.name[validLang]}
                       price={`₺${item.price}`}
                       description={item.description[validLang]}
+                      isAvailable={item.isAvailable}
+                      soldOutLabel={soldOutLabel}
                     />
                   ))}
                 </div>
