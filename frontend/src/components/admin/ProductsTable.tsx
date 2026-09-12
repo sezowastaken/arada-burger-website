@@ -5,6 +5,7 @@ import {
   createProduct,
   fetchAdminCategories,
   fetchAdminProducts,
+  reorderProducts,
   setProductActive,
   setProductAvailable,
   updateProduct,
@@ -12,11 +13,23 @@ import {
   type AdminProduct,
   type ProductInput,
 } from "@/lib/api";
+import { PriceHistoryModal } from "./PriceHistoryModal";
 import { ProductFormModal } from "./ProductFormModal";
 import { StatusBadge } from "./StatusBadge";
 
 type LoadState = "loading" | "ready" | "error";
-type ModalState = { mode: "closed" } | { mode: "create" } | { mode: "edit"; product: AdminProduct };
+type ModalState =
+  | { mode: "closed" }
+  | { mode: "create" }
+  | { mode: "edit"; product: AdminProduct }
+  | { mode: "history"; product: AdminProduct };
+
+function moved<T>(items: T[], from: number, to: number): T[] {
+  const next = [...items];
+  const [item] = next.splice(from, 1);
+  next.splice(to, 0, item);
+  return next;
+}
 
 export function ProductsTable() {
   const [products, setProducts] = useState<AdminProduct[]>([]);
@@ -29,6 +42,7 @@ export function ProductsTable() {
   // Products with an in-flight toggle; their switches are disabled until the
   // backend confirms, so the UI never shows an unsaved state.
   const [pendingIds, setPendingIds] = useState<number[]>([]);
+  const [reordering, setReordering] = useState(false);
 
   const load = useCallback(async () => {
     const [nextProducts, nextCategories] = await Promise.all([
@@ -92,6 +106,32 @@ export function ProductsTable() {
     }
   }
 
+  // Ordering is per category, so the arrows only appear when the table is
+  // filtered to one — "move up" across a category boundary has no meaning.
+  const canReorder = categoryFilter !== "all";
+
+  async function handleMove(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= filteredProducts.length) return;
+
+    const next = moved(filteredProducts, index, target);
+    setActionError("");
+    setReordering(true);
+    try {
+      await reorderProducts(
+        Number(categoryFilter),
+        next.map((product) => product.id),
+      );
+      // Re-read rather than re-sorting locally, so the table can never drift
+      // from the order the database actually holds.
+      await load();
+    } catch (error: unknown) {
+      setActionError(`Reorder: ${error instanceof Error ? error.message : "Update failed"}`);
+    } finally {
+      setReordering(false);
+    }
+  }
+
   async function handleSubmit(input: ProductInput) {
     if (modal.mode === "edit") {
       replaceProduct(await updateProduct(modal.product.id, input));
@@ -148,6 +188,7 @@ export function ProductsTable() {
         <table className="w-full text-left text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
             <tr>
+              {canReorder ? <th className="px-4 py-3">Order</th> : null}
               <th className="px-4 py-3">Image</th>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Category</th>
@@ -158,7 +199,7 @@ export function ProductsTable() {
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.map((product) => {
+            {filteredProducts.map((product, index) => {
               const pending = pendingIds.includes(product.id);
 
               return (
@@ -168,6 +209,30 @@ export function ProductsTable() {
                     product.isActive ? "" : "bg-slate-50/60"
                   }`}
                 >
+                  {canReorder ? (
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          disabled={reordering || index === 0}
+                          onClick={() => handleMove(index, -1)}
+                          className="rounded border border-slate-300 px-2 py-0.5 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-30"
+                          aria-label={`Move ${product.name.en} up`}
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          disabled={reordering || index === filteredProducts.length - 1}
+                          onClick={() => handleMove(index, 1)}
+                          className="rounded border border-slate-300 px-2 py-0.5 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-30"
+                          aria-label={`Move ${product.name.en} down`}
+                        >
+                          ↓
+                        </button>
+                      </div>
+                    </td>
+                  ) : null}
                   <td className="px-4 py-3">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -220,13 +285,22 @@ export function ProductsTable() {
                     </button>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => setModal({ mode: "edit", product })}
-                      className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                    >
-                      Edit
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setModal({ mode: "history", product })}
+                        className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                      >
+                        History
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setModal({ mode: "edit", product })}
+                        className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                      >
+                        Edit
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
@@ -235,12 +309,19 @@ export function ProductsTable() {
         </table>
       </div>
 
-      {modal.mode !== "closed" ? (
+      {modal.mode === "create" || modal.mode === "edit" ? (
         <ProductFormModal
           categories={categories}
           product={modal.mode === "edit" ? modal.product : null}
           onCancel={() => setModal({ mode: "closed" })}
           onSubmit={handleSubmit}
+        />
+      ) : null}
+
+      {modal.mode === "history" ? (
+        <PriceHistoryModal
+          product={modal.product}
+          onClose={() => setModal({ mode: "closed" })}
         />
       ) : null}
     </div>

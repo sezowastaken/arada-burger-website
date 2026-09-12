@@ -80,11 +80,25 @@ the database would keep the fallback honest.
 Product create/edit/active/available and price history already work. What is
 left:
 
-**2a — remaining CRUD**
-- [ ] Create/edit/deactivate categories.
-- [ ] Reorder products.
-- [ ] Reorder categories.
-- [ ] View price history from the admin panel.
+**2a — remaining CRUD (done)**
+- [x] Create/rename/hide categories, on a new `/admin/categories` page.
+      New categories start hidden: an active empty category renders a public
+      "coming soon" block the moment it is created.
+- [x] Reorder products, within one category at a time.
+- [x] Reorder categories.
+- [x] View price history from the admin panel.
+
+Reordering submits the complete ordered id list for its scope in a single
+transaction, and the backend rejects a partial, duplicated or foreign list
+rather than leaving rows on stale positions. Hiding a category warns how many
+*visible* products it takes off the public menu.
+
+**Open decision — `db:seed` overwrites admin data.** The seed upsert writes
+`price` and `sortOrder` back from `menuData.json` (`seed.ts:87`, `:89`), so
+re-running it discards every price edit and the whole custom ordering.
+`isActive`/`isAvailable` are correctly left alone. Suggested fix: stop writing
+those two columns on conflict, making seed a true seed rather than a one-way
+sync — at the cost of no longer being able to bulk-update prices from the JSON.
 
 **2b — polish**
 - [ ] Real image upload, replacing the manual image-path field.

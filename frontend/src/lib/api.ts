@@ -131,6 +131,19 @@ export interface ProductInput {
   image: string;
 }
 
+export interface PriceHistoryEntry {
+  id: number;
+  oldPrice: number;
+  newPrice: number;
+  changedAt: string;
+}
+
+export interface PriceHistory {
+  productId: number;
+  currentPrice: number;
+  history: PriceHistoryEntry[];
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     cache: "no-store",
@@ -194,4 +207,55 @@ export async function setProductAvailable(id: number, isAvailable: boolean): Pro
     body: JSON.stringify({ isAvailable }),
   });
   return data.product;
+}
+
+export async function fetchPriceHistory(id: number): Promise<PriceHistory> {
+  return request<PriceHistory>(`/api/admin/products/${id}/price-history`);
+}
+
+/**
+ * Reordering submits the complete ordered id list for its scope; the backend
+ * rejects a partial list rather than silently leaving rows behind.
+ */
+export async function reorderProducts(categoryId: number, ids: number[]): Promise<AdminProduct[]> {
+  const data = await request<{ products: AdminProduct[] }>("/api/admin/products/reorder", {
+    method: "PATCH",
+    body: JSON.stringify({ categoryId, ids }),
+  });
+  return data.products;
+}
+
+export async function createCategory(name: LocalizedText): Promise<AdminCategory> {
+  const data = await request<{ category: AdminCategory }>("/api/admin/categories", {
+    method: "POST",
+    body: JSON.stringify({ name }),
+  });
+  return data.category;
+}
+
+export async function updateCategory(id: number, name: LocalizedText): Promise<AdminCategory> {
+  const data = await request<{ category: AdminCategory }>(`/api/admin/categories/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ name }),
+  });
+  return data.category;
+}
+
+/** Also reports how many products the change pulls from (or returns to) the public menu. */
+export async function setCategoryActive(
+  id: number,
+  isActive: boolean,
+): Promise<{ category: AdminCategory; affectedProducts: number }> {
+  return request<{ category: AdminCategory; affectedProducts: number }>(
+    `/api/admin/categories/${id}/active`,
+    { method: "PATCH", body: JSON.stringify({ isActive }) },
+  );
+}
+
+export async function reorderCategories(ids: number[]): Promise<AdminCategory[]> {
+  const data = await request<{ categories: AdminCategory[] }>("/api/admin/categories/reorder", {
+    method: "PATCH",
+    body: JSON.stringify({ ids }),
+  });
+  return data.categories;
 }

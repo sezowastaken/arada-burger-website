@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "../db/client.js";
 import { categories, productPriceHistory, products } from "../db/schema.js";
 
@@ -95,6 +95,44 @@ interface UpdateProductBody {
   isAvailable?: boolean;
 }
 
+const reorderBodySchema = {
+  type: "object",
+  required: ["ids"],
+  additionalProperties: false,
+  properties: {
+    ids: {
+      type: "array",
+      minItems: 1,
+      items: { type: "integer", minimum: 1 },
+    },
+  },
+} as const;
+
+/**
+ * A reorder must submit the complete set of ids for its scope. Accepting a
+ * subset would silently leave the unlisted rows on stale sort_order values and
+ * interleave them at arbitrary positions.
+ */
+function validateReorderIds(submitted: number[], existing: number[]): string | null {
+  const unique = new Set(submitted);
+  if (unique.size !== submitted.length) {
+    return "Reorder list contains duplicate ids";
+  }
+
+  const existingSet = new Set(existing);
+  const unknown = submitted.filter((id) => !existingSet.has(id));
+  if (unknown.length > 0) {
+    return `Reorder list contains ids that do not belong here: ${unknown.join(", ")}`;
+  }
+
+  const missing = existing.filter((id) => !unique.has(id));
+  if (missing.length > 0) {
+    return `Reorder list is missing ids: ${missing.join(", ")}`;
+  }
+
+  return null;
+}
+
 export async function adminRoutes(app: FastifyInstance) {
   // NOTE: intentionally unauthenticated for now — auth is added in a later phase.
 
@@ -102,6 +140,183 @@ export async function adminRoutes(app: FastifyInstance) {
     const rows = await db.select().from(categories).orderBy(asc(categories.sortOrder));
     return { categories: rows.map(serializeCategory) };
   });
+
+  app.post<{ Body: { name: LocalizedInput; slug?: string; isActive?: boolean } }>(
+    "/categories",
+    {
+      schema: {
+        body: {
+          type: "object",
+          required: ["name"],
+          additionalProperties: false,
+          properties: {
+            name: localizedRequired,
+            slug: { type: "string", minLength: 1, maxLength: 200 },
+            isActive: { type: "boolean" },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const body = request.body;
+
+      const slug = slugify(body.slug ?? body.name.en);
+      if (!slug) {
+        return reply.code(400).send({ error: "Could not derive a valid slug from the category name" });
+      }
+
+      const existing = await db.query.categories.findFirst({ where: eq(categories.slug, slug) });
+      if (existing) {
+        return reply.code(400).send({ error: `A category with slug "${slug}" already exists` });
+      }
+
+      const siblings = await db.select({ sortOrder: categories.sortOrder }).from(categories);
+      const nextSortOrder = siblings.reduce((max, row) => Math.max(max, row.sortOrder), -1) + 1;
+
+      const [created] = await db
+        .insert(categories)
+        .values({
+          slug,
+          nameTr: body.name.tr,
+          nameEn: body.name.en,
+          sortOrder: nextSortOrder,
+          // Inactive by default: an active empty category renders a public
+          // "coming soon" block on the live menu the moment it is created.
+          // The owner fills it, then activates it deliberately.
+          isActive: body.isActive ?? false,
+        })
+        .returning();
+
+      return reply.code(201).send({ category: serializeCategory(created) });
+    },
+  );
+
+  // Registered before "/categories/:id" so the static segment is never read as an id.
+  app.patch<{ Body: { ids: number[] } }>(
+    "/categories/reorder",
+    { schema: { body: reorderBodySchema } },
+    async (request, reply) => {
+      const { ids } = request.body;
+
+      // Membership is checked inside the transaction so a category created
+      // concurrently cannot slip past the completeness check.
+      let validationError: string | null = null;
+      await db.transaction(async (tx) => {
+        const existing = await tx.select({ id: categories.id }).from(categories);
+        validationError = validateReorderIds(
+          ids,
+          existing.map((row) => row.id),
+        );
+        if (validationError) return;
+
+        for (const [index, id] of ids.entries()) {
+          await tx
+            .update(categories)
+            .set({ sortOrder: index, updatedAt: new Date() })
+            .where(eq(categories.id, id));
+        }
+      });
+
+      if (validationError) {
+        return reply.code(400).send({ error: validationError });
+      }
+
+      const rows = await db.select().from(categories).orderBy(asc(categories.sortOrder));
+      return { categories: rows.map(serializeCategory) };
+    },
+  );
+
+  app.patch<{ Params: { id: number }; Body: { name?: Partial<LocalizedInput> } }>(
+    "/categories/:id",
+    {
+      schema: {
+        params: {
+          type: "object",
+          required: ["id"],
+          properties: { id: { type: "integer", minimum: 1 } },
+        },
+        body: {
+          type: "object",
+          minProperties: 1,
+          additionalProperties: false,
+          properties: {
+            name: {
+              type: "object",
+              additionalProperties: false,
+              minProperties: 1,
+              properties: { tr: nameField, en: nameField },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+      const { name } = request.body;
+
+      const updates: Partial<typeof categories.$inferInsert> = { updatedAt: new Date() };
+      if (name?.tr !== undefined) updates.nameTr = name.tr;
+      if (name?.en !== undefined) updates.nameEn = name.en;
+
+      const [updated] = await db
+        .update(categories)
+        .set(updates)
+        .where(eq(categories.id, id))
+        .returning();
+
+      if (!updated) {
+        return reply.code(404).send({ error: `Category ${id} not found` });
+      }
+
+      return { category: serializeCategory(updated) };
+    },
+  );
+
+  // Deactivating a category also removes every product inside it from the
+  // public menu — /api/menu filters on the category's own isActive flag.
+  app.patch<{ Params: { id: number }; Body: { isActive: boolean } }>(
+    "/categories/:id/active",
+    {
+      schema: {
+        params: {
+          type: "object",
+          required: ["id"],
+          properties: { id: { type: "integer", minimum: 1 } },
+        },
+        body: {
+          type: "object",
+          required: ["isActive"],
+          additionalProperties: false,
+          properties: { isActive: { type: "boolean" } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+
+      const [updated] = await db
+        .update(categories)
+        .set({ isActive: request.body.isActive, updatedAt: new Date() })
+        .where(eq(categories.id, id))
+        .returning();
+
+      if (!updated) {
+        return reply.code(404).send({ error: `Category ${id} not found` });
+      }
+
+      // Only products that were actually reachable on the public menu count as
+      // affected — an already-deactivated product is not being taken away.
+      const affected = await db
+        .select({ id: products.id })
+        .from(products)
+        .where(and(eq(products.categoryId, id), eq(products.isActive, true)));
+
+      return {
+        category: serializeCategory(updated),
+        affectedProducts: affected.length,
+      };
+    },
+  );
 
   // Unlike the public /api/menu, this returns every product regardless of
   // isActive/isAvailable so the admin can manage hidden items.
@@ -181,6 +396,109 @@ export async function adminRoutes(app: FastifyInstance) {
         .returning();
 
       return reply.code(201).send({ product: serializeProduct(created, category) });
+    },
+  );
+
+  // Products are ordered within a category, so a reorder is scoped to one.
+  // Registered before "/products/:id" so the static segment is never read as an id.
+  app.patch<{ Body: { categoryId: number; ids: number[] } }>(
+    "/products/reorder",
+    {
+      schema: {
+        body: {
+          type: "object",
+          required: ["categoryId", "ids"],
+          additionalProperties: false,
+          properties: {
+            categoryId: { type: "integer", minimum: 1 },
+            ids: reorderBodySchema.properties.ids,
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { categoryId, ids } = request.body;
+
+      const category = await db.query.categories.findFirst({
+        where: eq(categories.id, categoryId),
+      });
+      if (!category) {
+        return reply.code(400).send({ error: `Category ${categoryId} does not exist` });
+      }
+
+      // Membership is checked inside the transaction so a product created or
+      // moved into this category concurrently cannot slip past the check.
+      let validationError: string | null = null;
+      await db.transaction(async (tx) => {
+        const existing = await tx
+          .select({ id: products.id })
+          .from(products)
+          .where(eq(products.categoryId, categoryId));
+
+        validationError = validateReorderIds(
+          ids,
+          existing.map((row) => row.id),
+        );
+        if (validationError) return;
+
+        for (const [index, id] of ids.entries()) {
+          await tx
+            .update(products)
+            .set({ sortOrder: index, updatedAt: new Date() })
+            .where(eq(products.id, id));
+        }
+      });
+
+      if (validationError) {
+        return reply.code(400).send({ error: validationError });
+      }
+
+      const rows = await db
+        .select({ product: products, category: categories })
+        .from(products)
+        .innerJoin(categories, eq(products.categoryId, categories.id))
+        .where(eq(products.categoryId, categoryId))
+        .orderBy(asc(products.sortOrder), asc(products.id));
+
+      return { products: rows.map((row) => serializeProduct(row.product, row.category)) };
+    },
+  );
+
+  app.get<{ Params: { id: number } }>(
+    "/products/:id/price-history",
+    {
+      schema: {
+        params: {
+          type: "object",
+          required: ["id"],
+          properties: { id: { type: "integer", minimum: 1 } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+
+      const product = await db.query.products.findFirst({ where: eq(products.id, id) });
+      if (!product) {
+        return reply.code(404).send({ error: `Product ${id} not found` });
+      }
+
+      const rows = await db
+        .select()
+        .from(productPriceHistory)
+        .where(eq(productPriceHistory.productId, id))
+        .orderBy(desc(productPriceHistory.changedAt));
+
+      return {
+        productId: id,
+        currentPrice: Number(product.price),
+        history: rows.map((row) => ({
+          id: row.id,
+          oldPrice: Number(row.oldPrice),
+          newPrice: Number(row.newPrice),
+          changedAt: row.changedAt.toISOString(),
+        })),
+      };
     },
   );
 
