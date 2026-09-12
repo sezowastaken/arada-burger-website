@@ -14,7 +14,7 @@ This file contains foundational architecture rules for Claude Code when working 
 1. **Keep architecture simple.** No Redis, message queues, microservices, Kubernetes, or other unnecessary abstractions.
 2. **Separation, not complexity.** `frontend/` and `backend/` are independent projects (separate `package.json`, no npm workspaces/monorepo tooling linking them).
 3. **Focused changes.** Prefer small, surgical changes over large refactors.
-4. **Phase alignment.** Don't build ahead of the current phase (e.g. no business tables, auth, or admin features until explicitly requested).
+4. **Milestone alignment.** Don't build ahead of the current milestone in `docs/product/roadmap.md` (e.g. no orders/inventory tables while the menu milestone is still open).
 5. **Follow existing patterns.** Check `docs/` and the current source before introducing new conventions.
 
 See also `TECHNICAL_STACK.md`, `GEMINI.md`, and `docs/notes/working-rules.md` for further project context.

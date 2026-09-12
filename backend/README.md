@@ -19,15 +19,25 @@ cp .env.example .env   # then edit DATABASE_URL, PORT, etc.
 - `npm run db:migrate` — apply migrations
 - `npm run db:studio` — open Drizzle Studio
 
+- `npm run db:seed` — populate categories/products from the frontend menu data
+
 ## Structure
 
 ```text
 src/
-├── config/env.ts     # environment variable loading/validation
+├── config/env.ts      # environment variable loading/validation
 ├── db/
 │   ├── client.ts      # Drizzle + pg pool
-│   └── schema.ts       # table definitions (empty for now)
-├── routes/health.ts   # GET /health
+│   ├── schema.ts      # categories, products, product_price_history
+│   ├── migrate.ts     # applies pending migrations on start
+│   └── seed.ts        # one-time data population
+├── routes/
+│   ├── health.ts      # GET /health
+│   ├── menu.ts        # public menu API (/api)
+│   └── admin.ts       # admin API (/api/admin) — unauthenticated for now
 ├── app.ts             # Fastify app factory
-└── server.ts           # entrypoint
+└── server.ts          # entrypoint
 ```
+
+See [`../TECHNICAL_STACK.md`](../TECHNICAL_STACK.md) for the endpoint list and
+the data model.

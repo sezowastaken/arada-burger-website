@@ -1,137 +1,75 @@
 # Arada Burger
 
-A simple and practical digital platform for Arada Burger, focusing on a high-quality customer experience and streamlined internal operations.
+A simple, practical digital platform for Arada Burger: a public bilingual
+website for customers, and an internal operations panel for the owners.
 
-## Project Overview
-This project aims to provide Arada Burger with a modern yet retro-inspired digital presence. The immediate priority is a live digital menu for customers, followed by a user-friendly admin panel for business data entry.
+The philosophy is deliberately conservative — small, readable, maintainable,
+and cheap to run on a single VPS. No microservices, no message queues, no
+monorepo tooling.
 
-## Folder Structure
-- `frontend/`: Public-facing website (React/Next.js or similar).
-- `backend/`: Future API and internal admin backend (Java/Spring Boot or similar).
-- `infra/`: Docker configurations and MySQL setup.
-- `docs/`: Project documentation, brand guidelines, and decision logs.
+## Architecture
 
-## Current Status
-- **Phase:** Phase 1 (Initialization)
-- **Status:** Project structure and core documentation established.
-- **Next Steps:** Begin frontend development for the digital menu and landing page.
-
-## Current Priorities
-1. **Digital Menu:** A fast, responsive, and bilingual (TR/EN) menu for in-store and remote customers.
-2. **Landing Page:** Introducing the Arada Burger brand and vibe.
-3. **Location & About:** Providing essential business information.
-
-
+```text
+frontend/   Next.js 15 (App Router) + TypeScript + Tailwind
+            ├── public site   /[lang]  — landing, menu, about, location (TR/EN)
+            └── admin panel   /admin   — operations panel
+backend/    Fastify + TypeScript, Drizzle ORM
+            └── PostgreSQL
+infra/      deployment configuration (reserved — not yet used)
+docs/       brand guidelines, product scope, roadmap, working rules
 ```
-arada-burger-website
-├─ backend
-│  └─ README.md
-├─ DESIGN.md
-├─ docs
-│  ├─ brand
-│  │  ├─ asset-inventory.md
-│  │  └─ brand-guidelines.md
-│  ├─ notes
-│  │  └─ working-rules.md
-│  └─ product
-│     ├─ project-scope.md
-│     └─ roadmap.md
-├─ frontend
-│  ├─ next-env.d.ts
-│  ├─ next.config.mjs
-│  ├─ package-lock.json
-│  ├─ package.json
-│  ├─ postcss.config.js
-│  ├─ public
-│  │  ├─ brand
-│  │  │  ├─ logo
-│  │  │  │  └─ logo_background_removed.png
-│  │  │  └─ mascots
-│  │  │     ├─ burger_maskot.png
-│  │  │     ├─ hotdog_maskot.png
-│  │  │     ├─ patates_maskotu.png
-│  │  │     └─ soda_maskot.png
-│  │  ├─ images
-│  │  │  ├─ burger_favicon.png
-│  │  │  ├─ eyes_favicon.png
-│  │  │  ├─ favicon_burger.png
-│  │  │  ├─ product_card_frame.png
-│  │  │  ├─ vintage_frame.png
-│  │  │  └─ vintage_frame_2.png
-│  │  └─ menu
-│  │     ├─ extras
-│  │     │  └─ CokeCan-Photoroom.png
-│  │     ├─ pdf
-│  │     │  └─ Arada_Burger_Menu_TR.pdf
-│  │     └─ products
-│  │        ├─ Aksaz_Hotdog.png
-│  │        ├─ Bayır_Burger.png
-│  │        ├─ Bozburun_Burger.png
-│  │        ├─ Datça_Burger.png
-│  │        ├─ Drinks
-│  │        │  ├─ ayran.jpg
-│  │        │  ├─ cola.png
-│  │        │  ├─ fanta.png
-│  │        │  ├─ fuse_tea.jpg
-│  │        │  ├─ meyveli-soda.png
-│  │        │  ├─ soda.png
-│  │        │  ├─ sprite.png
-│  │        │  └─ su.png
-│  │        ├─ Extras
-│  │        │  ├─ Extra_Fries.png
-│  │        │  ├─ Extra_Onion_Ring.png
-│  │        │  ├─ füme_et.png
-│  │        │  └─ kuru_et.png
-│  │        ├─ Göcek_Burger.png
-│  │        ├─ Islak_Hamburger_1.png
-│  │        ├─ Islak_Hamburger_3.png
-│  │        ├─ Islak_Hamburger_5.png
-│  │        ├─ Kaunos_Burger.png
-│  │        ├─ Kleopatra_Burger.png
-│  │        ├─ Knidos_Burger.png
-│  │        ├─ Marmaris_Burger.png
-│  │        ├─ Mimaras_Burger.png
-│  │        ├─ Nimara_Burger.png
-│  │        ├─ Old
-│  │        │  ├─ Kaunos_Burger.png
-│  │        │  ├─ Kleopatra_Burger.png
-│  │        │  ├─ Knidos_Burger.png
-│  │        │  ├─ Mimaras_Burger.png
-│  │        │  ├─ Nimara_Burger.png
-│  │        │  └─ Söğüt_Burger.png
-│  │        ├─ Selimiye_Burger.png
-│  │        ├─ Söğüt_Burger.png
-│  │        ├─ Turgut_Hotdog.png
-│  │        └─ Turunç_Hotdog.png
-│  ├─ README.md
-│  ├─ src
-│  │  ├─ app
-│  │  │  ├─ layout.tsx
-│  │  │  ├─ page.tsx
-│  │  │  └─ [lang]
-│  │  │     ├─ layout.tsx
-│  │  │     ├─ location
-│  │  │     │  └─ page.tsx
-│  │  │     ├─ menu
-│  │  │     │  ├─ MenuClient.tsx
-│  │  │     │  └─ page.tsx
-│  │  │     └─ page.tsx
-│  │  ├─ components
-│  │  │  └─ ui
-│  │  │     ├─ CategoryFilter.tsx
-│  │  │     ├─ MobileProductAccordion.tsx
-│  │  │     └─ ProductCard.tsx
-│  │  ├─ constants
-│  │  │  └─ menuData.json
-│  │  ├─ middleware.ts
-│  │  └─ styles
-│  │     └─ globals.css
-│  ├─ tailwind.config.js
-│  └─ tsconfig.json
-├─ GEMINI.md
-├─ infra
-│  └─ README.md
-├─ README.md
-└─ TECHNICAL_STACK.md
 
+`frontend/` and `backend/` are independent projects with their own
+`package.json`. They are not linked by workspaces.
+
+The public site and `/admin` live in the **same** Next.js app — one frontend,
+two audiences.
+
+## Quick start
+
+```bash
+cp .env.example .env          # first time only
+docker compose up -d          # postgres → backend (auto-migrates) → frontend
+cd backend && npm run db:seed # one-time: populate categories/products
 ```
+
+- Public site: http://localhost:3000
+- Admin panel: http://localhost:3000/admin
+- API: http://localhost:4000
+
+The backend container applies pending Drizzle migrations on every start
+(idempotent). Seeding is always an explicit, separate step.
+
+To run a service directly on the host instead, see `backend/README.md` and
+`frontend/README.md`.
+
+## Current status
+
+Branch `main` is production and still holds the public-site-only version.
+Active development happens on `feature/admin-backend`, which adds:
+
+- Fastify + Drizzle + PostgreSQL backend
+- `categories`, `products`, `product_price_history` schema
+- Public menu API and an admin API with product CRUD, active/available
+  toggles and automatic price-history recording
+- `/admin` shell with a working Products page
+- Docker Compose stack for local development
+
+**Next up:** connect the public menu to the database. The admin panel already
+reads and writes PostgreSQL, but `/tr/menu` and `/en/menu` still render
+`frontend/src/constants/menuData.json`.
+
+Admin endpoints are intentionally unauthenticated at this stage. Nothing is
+deployed until authentication lands — see M7 in the roadmap.
+
+## Documentation
+
+| File | What it covers |
+| --- | --- |
+| [`docs/product/roadmap.md`](docs/product/roadmap.md) | Milestones M0–M9 and execution order |
+| [`docs/product/project-scope.md`](docs/product/project-scope.md) | What this project is and is not |
+| [`TECHNICAL_STACK.md`](TECHNICAL_STACK.md) | Stack details and workflow |
+| [`DESIGN.md`](DESIGN.md) | The "Modern-Vintage Editorial" design system |
+| [`docs/brand/brand-guidelines.md`](docs/brand/brand-guidelines.md) | Brand voice, colors, assets |
+| [`docs/notes/working-rules.md`](docs/notes/working-rules.md) | Day-to-day working rules |
+| [`CLAUDE.md`](CLAUDE.md) / [`GEMINI.md`](GEMINI.md) | Mandates for AI coding assistants |

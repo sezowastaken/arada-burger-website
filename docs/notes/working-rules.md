@@ -6,8 +6,8 @@ To keep the Arada Burger project manageable and high-quality, follow these rules
 - If there is a simple way and a "clever" way, choose the simple way.
 - Avoid unnecessary libraries. Use native features whenever practical.
 
-## 2. Build for the Current Phase
-- Focus on the digital menu first. Don't build the database schema for the admin panel until we reach Phase 2.
+## 2. Build for the Current Milestone
+- Work on the current milestone in `docs/product/roadmap.md`. Don't create tables or screens for a later milestone "while we're in there".
 
 ## 3. Understandable Code
 - Write code that a junior developer could read and understand.

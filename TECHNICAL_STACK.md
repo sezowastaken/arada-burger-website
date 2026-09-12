@@ -1,75 +1,153 @@
-# Technical Documentation: Arada Burger Website
+# Technical Documentation: Arada Burger
 
-This document outlines the technical architecture, technology stack, and development roadmap for the Arada Burger project. The project follows a "simple and practical" philosophy, prioritizing maintainability and clean code over complex abstractions.
+This document describes the architecture and development workflow. The project
+follows a "simple and practical" philosophy — maintainability over cleverness.
+
+For what is built and what comes next, see
+[`docs/product/roadmap.md`](docs/product/roadmap.md).
 
 ## 1. Tech Stack
 
 ### Frontend
-- **Framework:** [Next.js 15 (App Router)](https://nextjs.org/) - Chosen for its robust routing, server-side rendering (SSR), and SEO capabilities.
-- **Language:** [TypeScript](https://www.typescriptlang.org/) - Ensures type safety and better developer experience.
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/) - Used for rapid UI development with a focus on utility-first styling.
-- **Fonts:** 
-  - `Epilogue`: Display font for headings.
-  - `Manrope`: Body font for readability.
-- **Icons:** [Lucide React](https://lucide.dev/) - A clean and consistent icon set.
 
-### Backend (Planned)
-- **Runtime:** [Node.js](https://nodejs.org/) with [Express](https://expressjs.com/) or [FastAPI](https://fastapi.tiangolo.com/).
-- **Database:** PostgreSQL or MongoDB (to be finalized based on Phase 2 requirements).
+One Next.js application serves both the public website and the admin panel.
+
+- **Framework:** [Next.js 15 (App Router)](https://nextjs.org/) — SSR and SEO
+  for the public site, plus the `/admin` routes.
+- **Language:** TypeScript.
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/).
+- **Fonts:** `Epilogue` (display/headings), `Manrope` (body).
+- **Icons:** [Lucide React](https://lucide.dev/).
+- **Routing:** `/[lang]` for the bilingual public site (TR/EN), `/admin` for
+  the operations panel.
+
+### Backend
+
+- **Runtime:** Node.js with [Fastify](https://fastify.dev/) + TypeScript.
+- **ORM:** [Drizzle ORM](https://orm.drizzle.team/), migrations via
+  `drizzle-kit`.
+- **Database:** PostgreSQL 16.
+- **Validation:** Fastify JSON Schema on route bodies/params.
+  `removeAdditional` is disabled on purpose so unknown properties fail with a
+  400 instead of being silently dropped.
 
 ### Infrastructure
-- **Containerization:** [Docker](https://www.docker.com/) - Used for consistent environments across development and production.
-- **Version Control:** Git.
 
----
+- **Containerization:** Docker Compose (`postgres`, `backend`, `frontend`).
+- **Version Control:** Git.
 
 ## 2. Project Structure
 
-The repository is structured to keep concerns separate without the overhead of a monorepo manager:
+Separate concerns without monorepo overhead — `frontend/` and `backend/` each
+have their own `package.json` and are not linked by workspaces.
 
 ```text
 /
-├── frontend/          # Next.js application
-├── backend/           # API services (Phase 2)
-├── infra/             # Docker, CI/CD, and deployment scripts
-├── docs/              # Brand guidelines, product roadmap, and rules
-└── GEMINI.md          # Core mandates for AI assistants
+├── frontend/            Next.js app (public site + /admin)
+│   └── src/
+│       ├── app/[lang]/  public pages
+│       ├── app/admin/   admin panel
+│       ├── components/  ui/, layout/, admin/
+│       ├── constants/   menuData.json (fallback menu data)
+│       └── lib/api.ts   backend API client
+├── backend/
+│   ├── src/
+│   │   ├── config/env.ts   environment loading/validation
+│   │   ├── db/             client, schema, migrate, seed
+│   │   ├── routes/         health, menu (public), admin
+│   │   ├── app.ts          Fastify app factory
+│   │   └── server.ts       entrypoint
+│   └── drizzle/            generated SQL migrations
+├── infra/               deployment config (reserved)
+├── docs/                brand, product, working rules
+└── docker-compose.yml   local development stack
 ```
 
----
+## 3. Data Model
 
-## 3. General Implementation Plan
+Current tables:
 
-### Phase 1: Prototype & Static Content (Current)
-- [x] Foundation: Setup Next.js with TypeScript and Tailwind.
-- [x] Design System: Implement brand colors, typography, and global styles.
-- [x] Multilingual Support: Implementation of `[lang]` routing for TR/EN.
-- [x] Landing Page: Responsive Hero, Featured Products, and "Why Arada" sections.
-- [x] Mascot System: Retro-style mascots with dynamic positioning.
-- [ ] Menu Page: Interactive menu with category filtering.
+| Table | Purpose |
+| --- | --- |
+| `categories` | Menu categories, bilingual names, sort order, active flag |
+| `products` | Menu items, bilingual name/description, price, image path, sort order, `is_active`, `is_available` |
+| `product_price_history` | Every price change, recorded automatically in the same transaction as the update |
 
-### Phase 2: Dynamic Features & Backend
-- [ ] Backend API: Setup Node.js/Express server.
-- [ ] Database Integration: Persist menu data and store locations.
-- [ ] Admin Panel: Simple dashboard for updating menu items and prices.
+Two distinct flags, deliberately:
 
-### Phase 3: Deployment & Optimization
-- [ ] Dockerization: Create Dockerfiles for frontend and backend.
-- [ ] Performance: Optimize images and implement Next.js caching.
-- [ ] SEO: Finalize meta tags and schema markup.
+- `is_active` — the product is part of the menu at all. Inactive products
+  disappear from the public menu entirely. Rows are never physically deleted,
+  so price history and future order references survive.
+- `is_available` — the product is on the menu but currently sold out.
 
----
+## 4. API
 
-## 4. Pipeline & Workflow
+| Method | Path | Notes |
+| --- | --- | --- |
+| `GET` | `/health` | Health check |
+| `GET` | `/api/menu` | Public menu — active categories and active products only |
+| `GET` | `/api/products/:slug` | Single active product |
+| `GET` | `/api/admin/categories` | All categories |
+| `GET` | `/api/admin/products` | All products, including inactive/unavailable |
+| `POST` | `/api/admin/products` | Create; slug derived from the English name |
+| `PATCH` | `/api/admin/products/:id` | Update; a price change also writes history |
+| `PATCH` | `/api/admin/products/:id/active` | Toggle menu visibility |
+| `PATCH` | `/api/admin/products/:id/available` | Toggle sold-out state |
 
-### Development Workflow
-1. **Local Dev:** Run `npm run dev` in the `frontend` directory.
-2. **Standardization:** Adhere to the patterns established in `frontend/src/components/` for UI and layout.
-3. **Mascot Tuning:** Mascots are positioned using absolute coordinates relative to the main page container to ensure they "float" naturally around the content.
+`/api/admin/*` is intentionally unauthenticated during local development.
+Authentication is M7 and is required before any deployment.
 
-### CI/CD Pipeline (Planned)
-- **Linting:** Automated `next lint` on every pull request.
-- **Build Check:** `npm run build` to ensure no production-breaking errors.
-- **Docker Build:** Automated image creation for staging environments.
+## 5. Development Workflow
 
----
+### Docker (recommended)
+
+```bash
+cp .env.example .env
+docker compose up -d
+cd backend && npm run db:seed   # one-time
+```
+
+The backend container runs pending migrations on every start before serving.
+
+### Running on the host
+
+```bash
+cd backend  && npm install && npm run dev   # :4000
+cd frontend && npm install && npm run dev   # :3000
+```
+
+Postgres still comes from Compose (`docker compose up -d postgres`). The root
+`.env` is the single source of truth for credentials; host-side tools connect
+via `localhost`, while the backend container overrides `DATABASE_URL` to reach
+the `postgres` service.
+
+### Database changes
+
+```bash
+cd backend
+npm run db:generate   # generate SQL from src/db/schema.ts
+npm run db:migrate    # apply
+npm run db:studio     # inspect
+```
+
+Always read the generated SQL before applying it — check `onDelete`
+behaviour, indexes and constraints rather than trusting the diff blindly.
+
+### Conventions
+
+- Follow the patterns already in `frontend/src/components/` and
+  `backend/src/routes/`.
+- The design system in [`DESIGN.md`](DESIGN.md) is binding for UI work.
+- Mobile first — most customers open the menu on a phone.
+- Bilingual (TR/EN) support is handled at the data level: every user-facing
+  string has `tr` and `en` variants.
+
+## 6. CI/CD (planned)
+
+Not set up yet. When it is:
+
+- Lint on every pull request
+- `npm run build` and `npm run typecheck` as the build gate
+- Docker image build for staging
+
+Deployment topology and the staging/production branch flow are decided in M8.
