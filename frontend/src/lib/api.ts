@@ -1,6 +1,13 @@
 import fallbackMenu from "@/constants/menuData.json";
 
+// Browser-facing origin: the published port on the host.
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+
+// Server-side origin. Inside Docker Compose `localhost` is the frontend
+// container itself, not the backend, so server rendering must address the
+// backend by its service name. Not NEXT_PUBLIC_*, so this is undefined in the
+// browser bundle and falls back to the public origin there.
+const SERVER_API_URL = process.env.API_INTERNAL_URL ?? API_URL;
 
 // fetch() has no default timeout. Without this, an API that accepts the
 // connection but never answers would hang the page render instead of
@@ -47,7 +54,7 @@ export interface MenuResult extends MenuResponse {
  */
 export async function fetchMenu(): Promise<MenuResult> {
   try {
-    const res = await fetch(`${API_URL}/api/menu`, {
+    const res = await fetch(`${SERVER_API_URL}/api/menu`, {
       cache: "no-store",
       signal: AbortSignal.timeout(MENU_TIMEOUT_MS),
     });

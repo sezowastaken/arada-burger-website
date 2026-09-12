@@ -46,6 +46,10 @@ services:
       # frontend's own Next.js server doesn't pick it up and collide with
       # the 3000:3000 port mapping below.
       PORT: "3000"
+      # Server-side rendering runs inside this container, where localhost is
+      # the frontend itself — the public menu must reach the backend over the
+      # compose network instead. The browser keeps using NEXT_PUBLIC_API_URL.
+      API_INTERNAL_URL: http://backend:4000
     ports:
       - "3000:3000"
     depends_on:
