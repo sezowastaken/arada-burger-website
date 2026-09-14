@@ -78,3 +78,60 @@ A vertical list component using a "jagged edge" (zigzag) mask at the bottom, uti
 - **Don't** use pure black (`#000000`). Only use `on_surface` (`#1e1c10`) to maintain the "Ink on Paper" warmth.
 - **Don't** use standard Material shadows. If it doesn't look like a physical sticker or a stacked menu, it’s too "techy."
 - **Don't** use icons without a slightly rounded, "chunky" stroke weight to match the `Epilogue` typeface.
+
+---
+
+## 7. The Admin Panel: Same World, Different Job
+
+Everything above describes the public site, which exists to persuade. The admin
+panel at `/admin` exists to get work done, and the two are designed to different
+rules on purpose. **The public site is a poster; the admin is a well-made
+kitchen tool.** It inherits the brand's materials and none of its ornament — a
+vintage frame around a data table would put the decoration in front of the task.
+
+Brand lives here in precise details instead.
+
+### What the admin inherits
+
+- **The palette.** Paper ground, `on_surface` ink, `primary` ketchup red.
+- **The checkerboard**, used exactly once: a 12px ink tile at 10% opacity as
+  the seam between the app chrome and the work surface. At half height it stops
+  reading as a checkerboard and becomes a dashed rule; in red it reads as an
+  alarm. Use the documented tile, quietly.
+
+### What the admin refuses
+
+- **The display face in the interface.** `Epilogue` appears only in the sidebar
+  wordmark. Labels, buttons, table data and forms are all `Manrope`. A poster
+  face in a data column is costume.
+- **The over-rounded radii.** The Tailwind config overrides `rounded-lg` to 2rem
+  and `rounded-xl` to 3rem for the public site. Admin radii are written
+  explicitly (`rounded-md`, `rounded-[10px]`, `rounded-[14px]`).
+- **Fluid type.** Product UI uses a fixed rem scale; a heading that shrinks in a
+  sidebar looks worse, not better.
+- **Mascots, sticker shadows, ornate frames.** None of them help someone mark a
+  burger sold out.
+
+### Rules specific to the admin
+
+- **Red lives on paper, never on ink.** `primary` on `on_surface` measures
+  1.77:1 and is unreadable. The active navigation item inverts to paper with ink
+  text instead — the brand's own contrast, used structurally.
+- **One hue, three shapes.** Red as a solid fill means "this is the action"; as
+  outlined text it means destructive; it is never used as decoration.
+- **Quiet health, loud exceptions.** The normal state (`On menu`, `In stock`)
+  is a neutral outline. Only the exception is coloured — `secondary` mustard for
+  "needs attention" (sold out, hidden). Thirty rows of green hides the two that
+  matter.
+- **Every control shows its states**: default, hover, focus-visible, active,
+  disabled, loading. Focus rings are never removed.
+- **Loading is a skeleton, not a spinner**, and empty states teach what the
+  screen is for.
+- **Status that can be tapped looks tappable.** A phone has no hover to reveal
+  that a badge is a button, and marking something sold out is the main phone job.
+- **Tabular figures** on every price and count, so columns line up.
+- **Responsive is structural**: the sidebar becomes a drawer, tables become
+  cards with full-size tap targets. It is used at a desk and one-handed in a
+  busy shop.
+- **Bilingual, like the site.** Copy lives in `src/lib/adminI18n.ts` and the
+  choice is kept in a cookie so the first paint is already correct.

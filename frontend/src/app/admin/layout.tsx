@@ -1,21 +1,24 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Header } from "@/components/admin/Header";
-import { Sidebar } from "@/components/admin/Sidebar";
+import { cookies } from "next/headers";
+import { AdminLanguageProvider } from "@/components/admin/AdminLanguageProvider";
+import { AdminShell } from "@/components/admin/AdminShell";
+import { ADMIN_LANG_COOKIE, DEFAULT_ADMIN_LANG, isAdminLang } from "@/lib/adminI18n";
 
 export const metadata: Metadata = {
   title: "Arada Burger Admin",
   description: "Internal admin panel for Arada Burger.",
 };
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
+export default async function AdminLayout({ children }: { children: ReactNode }) {
+  // Read the preference on the server so the first paint is already in the
+  // right language, rather than flashing one and correcting to the other.
+  const stored = (await cookies()).get(ADMIN_LANG_COOKIE)?.value;
+  const lang = isAdminLang(stored) ? stored : DEFAULT_ADMIN_LANG;
+
   return (
-    <div className="flex min-h-screen bg-slate-100 text-slate-900">
-      <Sidebar />
-      <div className="flex flex-1 flex-col">
-        <Header />
-        <main className="flex-1 p-6">{children}</main>
-      </div>
-    </div>
+    <AdminLanguageProvider initialLang={lang}>
+      <AdminShell>{children}</AdminShell>
+    </AdminLanguageProvider>
   );
 }

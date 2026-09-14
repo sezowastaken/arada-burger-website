@@ -12,8 +12,19 @@ import {
   type AdminProduct,
   type LocalizedText,
 } from "@/lib/api";
+import { useAdminLang } from "./AdminLanguageProvider";
+import {
+  StateToggle,
+  Button,
+  EmptyState,
+  ErrorNotice,
+  IconButton,
+  PageHeading,
+  Panel,
+  TableSkeleton,
+  tabularNums,
+} from "./AdminUI";
 import { CategoryFormModal } from "./CategoryFormModal";
-import { StatusBadge } from "./StatusBadge";
 
 type LoadState = "loading" | "ready" | "error";
 type ModalState = { mode: "closed" } | { mode: "create" } | { mode: "edit"; category: AdminCategory };
@@ -25,7 +36,24 @@ function moved<T>(items: T[], from: number, to: number): T[] {
   return next;
 }
 
+function ArrowUp() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ArrowDown() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 5v14M19 12l-7 7-7-7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function CategoriesTable() {
+  const { t, lang } = useAdminLang();
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [state, setState] = useState<LoadState>("loading");
@@ -52,18 +80,20 @@ export function CategoriesTable() {
       })
       .catch((error: unknown) => {
         if (cancelled) return;
-        setErrorMessage(error instanceof Error ? error.message : "Failed to load categories");
+        setErrorMessage(error instanceof Error ? error.message : t.common.loadFailed);
         setState("error");
       });
 
     return () => {
       cancelled = true;
     };
-  }, [load]);
+  }, [load, t.common.loadFailed]);
 
-  const productCountByCategory = useMemo(() => {
+  /** Only products still on the menu count — a hidden one is not being taken away. */
+  const visibleProductCount = useMemo(() => {
     const counts = new Map<number, number>();
     for (const product of products) {
+      if (!product.isActive) continue;
       counts.set(product.categoryId, (counts.get(product.categoryId) ?? 0) + 1);
     }
     return counts;
@@ -75,7 +105,7 @@ export function CategoriesTable() {
     try {
       await action();
     } catch (error: unknown) {
-      setActionError(`${label}: ${error instanceof Error ? error.message : "Update failed"}`);
+      setActionError(`${label}: ${error instanceof Error ? error.message : t.common.updateFailed}`);
     } finally {
       setBusy(false);
     }
@@ -88,26 +118,21 @@ export function CategoriesTable() {
     if (target < 0 || target >= categories.length) return;
 
     const next = moved(categories, index, target);
-    void run("Reorder", async () => {
+    void run(t.categories.title, async () => {
       setCategories(await reorderCategories(next.map((category) => category.id)));
     });
   }
 
   function handleToggleActive(category: AdminCategory) {
-    const count = productCountByCategory.get(category.id) ?? 0;
+    const count = visibleProductCount.get(category.id) ?? 0;
 
     if (category.isActive && count > 0) {
-      const confirmed = window.confirm(
-        `Hiding "${category.name.en}" also removes its ${count} product${count === 1 ? "" : "s"} from the public menu.\n\nContinue?`,
-      );
-      if (!confirmed) return;
+      if (!window.confirm(t.categories.hideConfirm(category.name[lang], count))) return;
     }
 
-    void run(category.name.en, async () => {
+    void run(category.name[lang], async () => {
       const { category: updated } = await setCategoryActive(category.id, !category.isActive);
-      setCategories((current) =>
-        current.map((row) => (row.id === updated.id ? updated : row)),
-      );
+      setCategories((current) => current.map((row) => (row.id === updated.id ? updated : row)));
     });
   }
 
@@ -123,117 +148,157 @@ export function CategoriesTable() {
     setActionError("");
   }
 
+  const newButton = (
+    <Button variant="primary" onClick={() => setModal({ mode: "create" })}>
+      {t.categories.newCategory}
+    </Button>
+  );
+
   if (state === "loading") {
-    return <p className="text-sm text-slate-500">Loading categories…</p>;
+    return (
+      <div className="space-y-5">
+        <PageHeading title={t.categories.title} subtitle={t.categories.subtitle} />
+        <TableSkeleton rows={5} columns={4} />
+      </div>
+    );
   }
 
   if (state === "error") {
-    return <p className="text-sm text-red-600">Failed to load categories: {errorMessage}</p>;
+    return (
+      <div className="space-y-5">
+        <PageHeading title={t.categories.title} />
+        <ErrorNotice>
+          {t.common.loadFailed}: {errorMessage}
+        </ErrorNotice>
+      </div>
+    );
+  }
+
+  function reorderControls(category: AdminCategory, index: number) {
+    return (
+      <div className="flex items-center gap-1">
+        <IconButton
+          disabled={busy || index === 0}
+          onClick={() => handleMove(index, -1)}
+          aria-label={t.categories.moveUp(category.name[lang])}
+        >
+          <ArrowUp />
+        </IconButton>
+        <IconButton
+          disabled={busy || index === categories.length - 1}
+          onClick={() => handleMove(index, 1)}
+          aria-label={t.categories.moveDown(category.name[lang])}
+        >
+          <ArrowDown />
+        </IconButton>
+      </div>
+    );
+  }
+
+  function visibilityButton(category: AdminCategory) {
+    return (
+      <StateToggle
+        tone={category.isActive ? "quiet" : "warn"}
+        label={category.isActive ? t.categories.visible : t.categories.hidden}
+        actionLabel={category.isActive ? t.categories.hideHint : t.categories.showHint}
+        disabled={busy}
+        onClick={() => handleToggleActive(category)}
+      />
+    );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold">Categories ({categories.length})</h2>
-          <p className="text-xs text-slate-500">
-            This order is the order customers see on the menu.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setModal({ mode: "create" })}
-          className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700"
-        >
-          New category
-        </button>
-      </div>
+    <div className="space-y-5">
+      <PageHeading
+        title={`${t.categories.title} (${categories.length})`}
+        subtitle={t.categories.subtitle}
+        actions={newButton}
+      />
 
-      {actionError ? (
-        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {actionError}
-        </p>
-      ) : null}
+      {actionError ? <ErrorNotice>{actionError}</ErrorNotice> : null}
 
-      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
-            <tr>
-              <th className="px-4 py-3">Order</th>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Products</th>
-              <th className="px-4 py-3">On public menu</th>
-              <th className="px-4 py-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((category, index) => {
-              const count = productCountByCategory.get(category.id) ?? 0;
-
-              return (
-                <tr
-                  key={category.id}
-                  className={`border-b border-slate-100 last:border-0 ${
-                    category.isActive ? "" : "bg-slate-50/60"
-                  }`}
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        disabled={busy || index === 0}
-                        onClick={() => handleMove(index, -1)}
-                        className="rounded border border-slate-300 px-2 py-0.5 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-30"
-                        aria-label={`Move ${category.name.en} up`}
-                      >
-                        ↑
-                      </button>
-                      <button
-                        type="button"
-                        disabled={busy || index === categories.length - 1}
-                        onClick={() => handleMove(index, 1)}
-                        className="rounded border border-slate-300 px-2 py-0.5 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-30"
-                        aria-label={`Move ${category.name.en} down`}
-                      >
-                        ↓
-                      </button>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="font-medium text-slate-900">{category.name.en}</div>
-                    <div className="text-xs text-slate-500">{category.name.tr}</div>
-                  </td>
-                  <td className="px-4 py-3 text-slate-600">{count}</td>
-                  <td className="px-4 py-3">
-                    <button
-                      type="button"
-                      disabled={busy}
-                      onClick={() => handleToggleActive(category)}
-                      className="disabled:opacity-50"
-                      title={
-                        category.isActive
-                          ? "Hide this category and its products from the public menu"
-                          : "Show this category on the public menu"
-                      }
-                    >
-                      <StatusBadge ok={category.isActive} onLabel="Visible" offLabel="Hidden" />
-                    </button>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => setModal({ mode: "edit", category })}
-                      className="rounded-md border border-slate-300 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                    >
-                      Rename
-                    </button>
-                  </td>
+      {categories.length === 0 ? (
+        <Panel>
+          <EmptyState
+            title={t.categories.emptyTitle}
+            body={t.categories.emptyBody}
+            action={newButton}
+          />
+        </Panel>
+      ) : (
+        <>
+          {/* Desktop: a real table, because this is scan-and-compare work. */}
+          <Panel className="hidden overflow-hidden md:block">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-outline_variant bg-surface_container_low/60 text-[0.6875rem] uppercase tracking-wide text-on_surface/50">
+                <tr>
+                  <th className="w-24 px-4 py-2.5 font-bold">{t.categories.colOrder}</th>
+                  <th className="px-4 py-2.5 font-bold">{t.categories.colName}</th>
+                  <th className="w-24 px-4 py-2.5 font-bold">{t.categories.colProducts}</th>
+                  <th className="w-32 px-4 py-2.5 font-bold">{t.categories.colVisible}</th>
+                  <th className="w-32 px-4 py-2.5" />
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody className="divide-y divide-outline_variant/70">
+                {categories.map((category, index) => (
+                  <tr
+                    key={category.id}
+                    className={`transition-colors duration-150 hover:bg-surface_container_low/50 ${
+                      category.isActive ? "" : "bg-on_surface/[0.02]"
+                    }`}
+                  >
+                    <td className="px-4 py-3">{reorderControls(category, index)}</td>
+                    <td className="px-4 py-3">
+                      <div className="font-semibold text-on_surface">{category.name[lang]}</div>
+                      <div className="text-[0.75rem] text-on_surface/45">
+                        {lang === "tr" ? category.name.en : category.name.tr}
+                      </div>
+                    </td>
+                    <td className={`px-4 py-3 text-on_surface/65 ${tabularNums}`}>
+                      {visibleProductCount.get(category.id) ?? 0}
+                    </td>
+                    <td className="px-4 py-3">{visibilityButton(category)}</td>
+                    <td className="px-4 py-3 text-right">
+                      <Button size="sm" onClick={() => setModal({ mode: "edit", category })}>
+                        {t.categories.rename}
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Panel>
+
+          {/* Phone: cards with full-size tap targets instead of a scrolling table. */}
+          <div className="space-y-2.5 md:hidden">
+            {categories.map((category, index) => (
+              <Panel key={category.id} className="px-4 py-3.5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-on_surface">{category.name[lang]}</p>
+                    <p className="truncate text-[0.75rem] text-on_surface/45">
+                      {lang === "tr" ? category.name.en : category.name.tr}
+                    </p>
+                  </div>
+                  {reorderControls(category, index)}
+                </div>
+
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    {visibilityButton(category)}
+                    <span className={`text-[0.75rem] text-on_surface/50 ${tabularNums}`}>
+                      {visibleProductCount.get(category.id) ?? 0} {t.categories.colProducts.toLowerCase()}
+                    </span>
+                  </div>
+                  <Button size="sm" onClick={() => setModal({ mode: "edit", category })}>
+                    {t.categories.rename}
+                  </Button>
+                </div>
+              </Panel>
+            ))}
+          </div>
+        </>
+      )}
 
       {modal.mode !== "closed" ? (
         <CategoryFormModal

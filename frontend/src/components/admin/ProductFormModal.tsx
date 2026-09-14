@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import type { AdminCategory, AdminProduct, ProductInput } from "@/lib/api";
+import { useAdminLang } from "./AdminLanguageProvider";
+import { AdminModal } from "./AdminModal";
+import { Button, ErrorNotice, fieldInputClass, fieldLabelClass } from "./AdminUI";
 
 interface Props {
   categories: AdminCategory[];
@@ -34,6 +37,7 @@ function initialState(product: AdminProduct | null, categories: AdminCategory[])
 }
 
 export function ProductFormModal({ categories, product, onCancel, onSubmit }: Props) {
+  const { t, lang } = useAdminLang();
   const [form, setForm] = useState<FormState>(() => initialState(product, categories));
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -52,19 +56,19 @@ export function ProductFormModal({ categories, product, onCancel, onSubmit }: Pr
 
     const price = Number(form.price);
     if (!form.nameTr.trim() || !form.nameEn.trim()) {
-      setError("Both Turkish and English names are required.");
+      setError(t.productForm.errNames);
       return;
     }
     if (!form.image.trim()) {
-      setError("Image path is required.");
+      setError(t.productForm.errImage);
       return;
     }
     if (!form.price.trim() || Number.isNaN(price) || price < 0) {
-      setError("Price must be a number of 0 or more.");
+      setError(t.productForm.errPrice);
       return;
     }
     if (!form.categoryId) {
-      setError("Category is required.");
+      setError(t.productForm.errCategory);
       return;
     }
 
@@ -78,140 +82,119 @@ export function ProductFormModal({ categories, product, onCancel, onSubmit }: Pr
         image: form.image.trim(),
       });
     } catch (submitError: unknown) {
-      setError(submitError instanceof Error ? submitError.message : "Failed to save product");
+      setError(submitError instanceof Error ? submitError.message : t.productForm.errSave);
       setSaving(false);
     }
   }
 
-  const inputClass =
-    "w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none";
-  const labelClass = "mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500";
-
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/40 p-4">
-      <div className="my-8 w-full max-w-2xl rounded-lg bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <h2 className="text-lg font-semibold">{product ? "Edit product" : "New product"}</h2>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded px-2 py-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-            aria-label="Close"
-          >
-            ✕
-          </button>
+    <AdminModal
+      title={product ? t.productForm.editTitle : t.productForm.createTitle}
+      subtitle={product ? product.name[lang] : undefined}
+      onClose={onCancel}
+    >
+      <form onSubmit={handleSubmit} className="space-y-4 px-5 py-5">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className={fieldLabelClass} htmlFor="nameTr">
+              {t.productForm.nameTr}
+            </label>
+            <input id="nameTr" className={fieldInputClass} value={form.nameTr} onChange={update("nameTr")} />
+          </div>
+          <div>
+            <label className={fieldLabelClass} htmlFor="nameEn">
+              {t.productForm.nameEn}
+            </label>
+            <input id="nameEn" className={fieldInputClass} value={form.nameEn} onChange={update("nameEn")} />
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className={labelClass} htmlFor="nameTr">
-                Name (TR)
-              </label>
-              <input id="nameTr" className={inputClass} value={form.nameTr} onChange={update("nameTr")} />
-            </div>
-            <div>
-              <label className={labelClass} htmlFor="nameEn">
-                Name (EN)
-              </label>
-              <input id="nameEn" className={inputClass} value={form.nameEn} onChange={update("nameEn")} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className={labelClass} htmlFor="descriptionTr">
-                Description (TR)
-              </label>
-              <textarea
-                id="descriptionTr"
-                rows={3}
-                className={inputClass}
-                value={form.descriptionTr}
-                onChange={update("descriptionTr")}
-              />
-            </div>
-            <div>
-              <label className={labelClass} htmlFor="descriptionEn">
-                Description (EN)
-              </label>
-              <textarea
-                id="descriptionEn"
-                rows={3}
-                className={inputClass}
-                value={form.descriptionEn}
-                onChange={update("descriptionEn")}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className={labelClass} htmlFor="categoryId">
-                Category
-              </label>
-              <select
-                id="categoryId"
-                className={inputClass}
-                value={form.categoryId}
-                onChange={update("categoryId")}
-              >
-                {categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name.en}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={labelClass} htmlFor="price">
-                Price (₺)
-              </label>
-              <input
-                id="price"
-                type="number"
-                step="0.01"
-                min="0"
-                className={inputClass}
-                value={form.price}
-                onChange={update("price")}
-              />
-            </div>
-          </div>
-
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className={labelClass} htmlFor="image">
-              Image path
+            <label className={fieldLabelClass} htmlFor="descriptionTr">
+              {t.productForm.descriptionTr}
             </label>
-            <input
-              id="image"
-              className={inputClass}
-              placeholder="/menu/products/Example.png"
-              value={form.image}
-              onChange={update("image")}
+            <textarea
+              id="descriptionTr"
+              rows={3}
+              className={fieldInputClass}
+              value={form.descriptionTr}
+              onChange={update("descriptionTr")}
             />
           </div>
-
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
-
-          <div className="flex justify-end gap-2 border-t border-slate-200 pt-4">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50"
-            >
-              {saving ? "Saving…" : product ? "Save changes" : "Create product"}
-            </button>
+          <div>
+            <label className={fieldLabelClass} htmlFor="descriptionEn">
+              {t.productForm.descriptionEn}
+            </label>
+            <textarea
+              id="descriptionEn"
+              rows={3}
+              className={fieldInputClass}
+              value={form.descriptionEn}
+              onChange={update("descriptionEn")}
+            />
           </div>
-        </form>
-      </div>
-    </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className={fieldLabelClass} htmlFor="categoryId">
+              {t.productForm.category}
+            </label>
+            <select
+              id="categoryId"
+              className={fieldInputClass}
+              value={form.categoryId}
+              onChange={update("categoryId")}
+            >
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name[lang]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={fieldLabelClass} htmlFor="price">
+              {t.productForm.price}
+            </label>
+            <input
+              id="price"
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              min="0"
+              className={fieldInputClass}
+              value={form.price}
+              onChange={update("price")}
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className={fieldLabelClass} htmlFor="image">
+            {t.productForm.image}
+          </label>
+          <input
+            id="image"
+            className={fieldInputClass}
+            placeholder="/menu/products/Example.png"
+            value={form.image}
+            onChange={update("image")}
+          />
+        </div>
+
+        {error ? <ErrorNotice>{error}</ErrorNotice> : null}
+
+        <div className="flex justify-end gap-2 border-t border-outline_variant pt-4">
+          <Button type="button" variant="ghost" onClick={onCancel}>
+            {t.common.cancel}
+          </Button>
+          <Button type="submit" variant="primary" loading={saving}>
+            {saving ? t.common.saving : product ? t.productForm.save : t.productForm.create}
+          </Button>
+        </div>
+      </form>
+    </AdminModal>
   );
 }
