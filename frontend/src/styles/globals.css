@@ -60,3 +60,39 @@ body::before {
 .animate-float {
   animation: float 4s ease-in-out infinite;
 }
+
+/*
+ * Reduced motion.
+ *
+ * The system setting is a stated accessibility need — someone who gets motion
+ * sick or has a vestibular disorder has asked every site to stop moving. This
+ * site had nothing honouring it: the float animation, hover lifts, page
+ * transitions and the accordion's layout animations all ran regardless.
+ *
+ * Framer Motion is handled separately, in ReducedMotionProvider — its
+ * animations are driven from JavaScript and never touch these rules.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /*
+   * Loading indicators are the exception. Frozen mid-turn, a spinner reads as
+   * a crashed page rather than a calm one, so these keep moving — slowed right
+   * down, small, and never travelling across the screen.
+   */
+  .animate-spin {
+    animation: spin 1.6s linear infinite !important;
+  }
+
+  .animate-pulse {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+  }
+}

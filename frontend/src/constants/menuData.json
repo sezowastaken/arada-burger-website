@@ -13,12 +13,13 @@
             "tr": "Marmaris Burger",
             "en": "Marmaris Burger"
           },
-          "price": 520,
+          "price": 600,
           "description": {
             "tr": "150 gr Burger köftesi, cheddar peyniri, trüf mayo, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
             "en": "150 gr Burger patty, cheddar cheese, truffle mayo, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
           },
-          "image": "/menu/products/Marmaris_Burger.png"
+          "image": "/menu/products/Marmaris_Burger.png",
+          "isAvailable": true
         },
         {
           "id": "datca-burger",
@@ -29,9 +30,10 @@
           "price": 570,
           "description": {
             "tr": "150 gr Burger köftesi, tereyağında kavrulmuş Datça badem, özel acı sos, cheddar peyniri, trüf sos, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
-            "en": "150 gr Burger patty, butter-roasted Datça almonds, special hot sauce, cheddar cheese, truffle sauce, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"    
+            "en": "150 gr Burger patty, butter-roasted Datça almonds, special hot sauce, cheddar cheese, truffle sauce, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
           },
-          "image": "/menu/products/Datça_Burger.png"
+          "image": "/menu/products/Datça_Burger.png",
+          "isAvailable": true
         },
         {
           "id": "gocek-burger",
@@ -44,7 +46,8 @@
             "tr": "150 gr Burger köftesi, mantar taneli krema, cheddar peyniri, trüf cheese sos, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
             "en": "150 gr Burger patty, mushroom cream with mushroom pieces, cheddar cheese, truffle cheese sauce, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
           },
-          "image": "/menu/products/Göcek_Burger.png"
+          "image": "/menu/products/Göcek_Burger.png",
+          "isAvailable": true
         },
         {
           "id": "selimiye-burger",
@@ -57,7 +60,8 @@
             "tr": "150 gr Burger köftesi, füme kaburga eti, trüf cheese sos, turşu relish, iceberg marul ve marul parçaları. (2 soğan halkası, kajun patates)",
             "en": "150 gr Burger patty, smoked rib meat, truffle cheese sauce, pickle relish, iceberg lettuce and lettuce pieces. (2 onion rings, cajun fries)"
           },
-          "image": "/menu/products/Selimiye_Burger.png"
+          "image": "/menu/products/Selimiye_Burger.png",
+          "isAvailable": true
         },
         {
           "id": "bozburun-burger",
@@ -70,7 +74,8 @@
             "tr": "150 gr Burger köftesi, tütsülenmiş balkan eti, cheddar peyniri, mor soğan, trüf mayonez, turşu relish, iceberg marul. (2 soğan halkası, kajun patates)",
             "en": "150 gr Burger patty, smoked Balkan meat, cheddar cheese, red onion, truffle mayonnaise, pickle relish, iceberg lettuce. (2 onion rings, cajun fries)"
           },
-          "image": "/menu/products/Bozburun_Burger.png"
+          "image": "/menu/products/Bozburun_Burger.png",
+          "isAvailable": true
         },
         {
           "id": "bayir-burger",
@@ -83,7 +88,8 @@
             "tr": "150 gr Burger köftesi, cheddar peyniri, közlenmiş patlıcan, közlenmiş kapya biber, karamelize soğan, iceberg marul. (2 soğan halkası, kajun patates)",
             "en": "150 gr Burger patty, cheddar cheese, roasted eggplant, roasted capia pepper, caramelized onion, iceberg lettuce. (2 onion rings, cajun fries)"
           },
-          "image": "/menu/products/Bayır_Burger.png"
+          "image": "/menu/products/Bayır_Burger.png",
+          "isAvailable": true
         },
         {
           "id": "islak-hamburger-tekli",
@@ -96,7 +102,8 @@
             "tr": "Burger köftesi, özel domates soslu yumuşak hamburger ekmeği.",
             "en": "Burger patty, soft burger bun with special tomato sauce."
           },
-          "image": "/menu/products/Islak_Hamburger_1.png"
+          "image": "/menu/products/Islak_Hamburger_1.png",
+          "isAvailable": true
         },
         {
           "id": "islak-hamburger-uclu",
@@ -109,7 +116,8 @@
             "tr": "Burger köftesi, özel domates soslu yumuşak hamburger ekmeği.",
             "en": "Burger patty, soft burger bun with special tomato sauce."
           },
-          "image": "/menu/products/Islak_Hamburger_3.png"
+          "image": "/menu/products/Islak_Hamburger_3.png",
+          "isAvailable": true
         },
         {
           "id": "islak-hamburger-besli",
@@ -122,7 +130,8 @@
             "tr": "Burger köftesi, özel domates soslu yumuşak hamburger ekmeği.",
             "en": "Burger patty, soft burger bun with special tomato sauce."
           },
-          "image": "/menu/products/Islak_Hamburger_5.png"
+          "image": "/menu/products/Islak_Hamburger_5.png",
+          "isAvailable": true
         }
       ]
     },
@@ -144,7 +153,8 @@
             "tr": "Çıtır tavuk burger, cheddar peyniri, özel happy sos, domates, turşu, iceberg marul. (2 soğan halkası, kajun patates)",
             "en": "Crispy chicken burger, cheddar cheese, special happy sauce, tomato, pickles, iceberg lettuce. (2 onion rings, cajun fries)"
           },
-          "image": "/menu/products/Söğüt_Burger.png"
+          "image": "/menu/products/Söğüt_Burger.png",
+          "isAvailable": true
         },
         {
           "id": "mimaras-burger",
@@ -157,7 +167,8 @@
             "tr": "Çıtır tavuk burger köftesi, burger sos, ballı hardal, iceberg parçalı mayonez, marul, turşu. (150 gr. kajun patates)",
             "en": "Crispy chicken burger patty, burger sauce, honey mustard, chunky iceberg mayonnaise, lettuce, pickles. (150 g cajun fries)"
           },
-          "image": "/menu/products/Mimaras_Burger.png"
+          "image": "/menu/products/Mimaras_Burger.png",
+          "isAvailable": true
         },
         {
           "id": "knidos-burger",
@@ -170,7 +181,8 @@
             "tr": "Çıtır tavuk parçaları (Nashville hot soslu), turşu, marul, acılı mayo, burger sos. (150 gr. kajun patates)",
             "en": "Crispy chicken pieces (with Nashville hot sauce), pickles, lettuce, spicy mayo, burger sauce. (150 g cajun fries)"
           },
-          "image": "/menu/products/Knidos_Burger.png"
+          "image": "/menu/products/Knidos_Burger.png",
+          "isAvailable": true
         },
         {
           "id": "kaunos-burger",
@@ -183,7 +195,8 @@
             "tr": "Çıtır tavuk parçaları, smoky mayonez, karamelize soğan, cheddar, marul, turşu. (150 gr. kajun patates)",
             "en": "Crispy chicken pieces, smoky mayonnaise, caramelized onion, cheddar, lettuce, pickles. (150 g cajun fries)"
           },
-          "image": "/menu/products/Kaunos_Burger.png"
+          "image": "/menu/products/Kaunos_Burger.png",
+          "isAvailable": true
         },
         {
           "id": "kleopatra-burger",
@@ -196,7 +209,8 @@
             "tr": "Çıtır tavuk parçaları, pancarlı garlic mayonez, mor lahana coleslaw. (150 gr. kajun patates)",
             "en": "Crispy chicken pieces, beetroot garlic mayonnaise, purple cabbage coleslaw. (150 g cajun fries)"
           },
-          "image": "/menu/products/Kleopatra_Burger.png"
+          "image": "/menu/products/Kleopatra_Burger.png",
+          "isAvailable": true
         },
         {
           "id": "nimara-burger",
@@ -209,7 +223,8 @@
             "tr": "Çıtır tavuk parçaları, cheddar sos, 2 dilim cheddar, marul, iceberg parçalı mayonez, çıtır soğan. (150 gr. kajun patates)",
             "en": "Crispy chicken pieces, cheddar sauce, 2 slices of cheddar, lettuce, chunky iceberg mayonnaise, crispy onion. (150 g cajun fries)"
           },
-          "image": "/menu/products/Nimara_Burger.png"
+          "image": "/menu/products/Nimara_Burger.png",
+          "isAvailable": true
         }
       ]
     },
@@ -231,7 +246,8 @@
             "tr": "Dana frankfurter sosis, turşu, ketçap, mayonez, mor soğan, 2 soğan halkası, kajun patates",
             "en": "Beef frankfurter sausage, pickles, ketchup, mayonnaise, red onion, 2 onion rings, cajun fries"
           },
-          "image": "/menu/products/Turgut_Hotdog.png"
+          "image": "/menu/products/Turgut_Hotdog.png",
+          "isAvailable": true
         },
         {
           "id": "aksaz-hotdog",
@@ -244,7 +260,8 @@
             "tr": "Dana frankfurter sosis, karamelize soğan, ketçap, mayonez, hardal, 2 soğan halkası, kajun patates",
             "en": "Beef frankfurter sausage, caramelized onion, ketchup, mayonnaise, mustard, 2 onion rings, cajun fries"
           },
-          "image": "/menu/products/Aksaz_Hotdog.png"
+          "image": "/menu/products/Aksaz_Hotdog.png",
+          "isAvailable": true
         },
         {
           "id": "turunc-hotdog",
@@ -257,7 +274,8 @@
             "tr": "Dana frankfurter sosis, Rus salatası, mısır, ketçap, 2 adet soğan halkası ve kajun patates",
             "en": "Beef frankfurter sausage, Russian salad, corn, ketchup, 2 onion rings and cajun fries"
           },
-          "image": "/menu/products/Turunç_Hotdog.png"
+          "image": "/menu/products/Turunç_Hotdog.png",
+          "isAvailable": true
         }
       ]
     },
@@ -279,7 +297,8 @@
             "tr": "300 gram kajun baharatlı patates kızartması",
             "en": "300 grams of cajun seasoned fries"
           },
-          "image": "/menu/products/Extras/Extra_Fries.png"
+          "image": "/menu/products/Extras/Extra_Fries.png",
+          "isAvailable": true
         },
         {
           "id": "ilave-fume-et",
@@ -292,7 +311,8 @@
             "tr": "Hamburgerin içine ekstra",
             "en": "Extra add-in for the burger"
           },
-          "image": "/menu/products/Extras/füme_et.png"
+          "image": "/menu/products/Extras/füme_et.png",
+          "isAvailable": true
         },
         {
           "id": "sogan-halkasi",
@@ -305,7 +325,8 @@
             "tr": "10 adet soğan halkası, 150 gram kajun baharatlı patates kızartması",
             "en": "10 onion rings, 150 grams of cajun seasoned fries"
           },
-          "image": "/menu/products/Extras/Extra_Onion_Ring.png"
+          "image": "/menu/products/Extras/Extra_Onion_Ring.png",
+          "isAvailable": true
         },
         {
           "id": "ilave-kuru-et",
@@ -318,7 +339,8 @@
             "tr": "Hamburgerin içine ekstra",
             "en": "Extra add-in for the burger"
           },
-          "image": "/menu/products/Extras/kuru_et.png"
+          "image": "/menu/products/Extras/kuru_et.png",
+          "isAvailable": true
         }
       ]
     },
@@ -340,7 +362,8 @@
             "tr": "",
             "en": ""
           },
-          "image": "/menu/products/Drinks/cola.png"
+          "image": "/menu/products/Drinks/cola.png",
+          "isAvailable": true
         },
         {
           "id": "fanta",
@@ -353,7 +376,8 @@
             "tr": "",
             "en": ""
           },
-          "image": "/menu/products/Drinks/fanta.png"
+          "image": "/menu/products/Drinks/fanta.png",
+          "isAvailable": true
         },
         {
           "id": "sprite",
@@ -366,7 +390,8 @@
             "tr": "",
             "en": ""
           },
-          "image": "/menu/products/Drinks/sprite.png"
+          "image": "/menu/products/Drinks/sprite.png",
+          "isAvailable": true
         },
         {
           "id": "fuse-tea",
@@ -379,7 +404,8 @@
             "tr": "",
             "en": ""
           },
-          "image": "/menu/products/Drinks/fuse_tea.jpg"
+          "image": "/menu/products/Drinks/fuse_tea.jpg",
+          "isAvailable": true
         },
         {
           "id": "buyuk-ayran",
@@ -392,7 +418,8 @@
             "tr": "",
             "en": ""
           },
-          "image": "/menu/products/Drinks/ayran.jpg"
+          "image": "/menu/products/Drinks/ayran.jpg",
+          "isAvailable": true
         },
         {
           "id": "soda",
@@ -405,7 +432,8 @@
             "tr": "",
             "en": ""
           },
-          "image": "/menu/products/Drinks/soda.png"
+          "image": "/menu/products/Drinks/soda.png",
+          "isAvailable": true
         },
         {
           "id": "meyveli-soda",
@@ -418,7 +446,8 @@
             "tr": "",
             "en": ""
           },
-          "image": "/menu/products/Drinks/meyveli-soda.png"
+          "image": "/menu/products/Drinks/meyveli-soda.png",
+          "isAvailable": true
         },
         {
           "id": "su",
@@ -431,7 +460,8 @@
             "tr": "",
             "en": ""
           },
-          "image": "/menu/products/Drinks/su.png"
+          "image": "/menu/products/Drinks/su.png",
+          "isAvailable": true
         }
       ]
     }

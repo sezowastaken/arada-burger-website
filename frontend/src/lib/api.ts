@@ -75,6 +75,10 @@ export async function fetchMenu(): Promise<MenuResult> {
  * Reshapes the bundled JSON into the API's own shape so callers only ever
  * handle one format. Ids here are positional, not database ids — the JSON has
  * none; `slug` is the stable identifier in both modes.
+ *
+ * Everything in the file is on the menu by definition: `db:export-menu` writes
+ * only active categories and products, so an outage cannot resurrect something
+ * that was deliberately taken down.
  */
 function fallbackMenuCategories(): MenuCategory[] {
   return fallbackMenu.categories.map((category, categoryIndex) => ({
@@ -90,7 +94,10 @@ function fallbackMenuCategories(): MenuCategory[] {
       price: item.price,
       image: item.image ?? "",
       isActive: true,
-      isAvailable: true,
+      // Carried through so a sold-out burger still reads as sold out during an
+      // outage. Older hand-written entries predate the field and default to
+      // available, which is how the file behaved before.
+      isAvailable: item.isAvailable ?? true,
       sortOrder: itemIndex,
     })),
   }));
@@ -258,4 +265,69 @@ export async function reorderCategories(ids: number[]): Promise<AdminCategory[]>
     body: JSON.stringify({ ids }),
   });
   return data.categories;
+}
+
+/** Mirrors the backend's own limit, so an oversized file is refused before upload. */
+export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+export const ACCEPTED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+
+/**
+ * Uploads a product image and returns the stored path (`/uploads/...`).
+ *
+ * Deliberately not routed through `request()`: setting Content-Type by hand on
+ * a FormData body omits the multipart boundary, and the request is then
+ * unparseable at the other end.
+ */
+export async function uploadProductImage(file: File): Promise<string> {
+  const body = new FormData();
+  body.append("file", file);
+
+  const res = await fetch(`${API_URL}/api/admin/uploads`, { method: "POST", body });
+
+  if (!res.ok) {
+    let detail = `${res.status} ${res.statusText}`;
+    try {
+      const payload = await res.json();
+      detail = payload?.message || payload?.error || detail;
+    } catch {
+      // non-JSON body — keep the status text
+    }
+    throw new Error(detail);
+  }
+
+  const data: { path: string } = await res.json();
+  return data.path;
+}
+
+/* ---------------------------------------------------------------------------
+ * Admin analytics — aggregated reads over the event log recorded by
+ * `frontend/src/lib/analytics.ts`. Unauthenticated for now, like the rest of
+ * the admin API.
+ * ------------------------------------------------------------------------ */
+
+export interface AnalyticsDaily {
+  day: string;
+  sessions: number;
+  pageViews: number;
+}
+
+export interface AnalyticsSlugCount {
+  slug: string;
+  clicks: number;
+  /** `null` when the slug no longer matches a product/category row. */
+  name: LocalizedText | null;
+}
+
+export interface AnalyticsSummary {
+  rangeDays: number;
+  totals: { sessions: number; pageViews: number; directSessions: number };
+  deviceSplit: Partial<Record<"mobile" | "tablet" | "desktop", number>>;
+  daily: AnalyticsDaily[];
+  topReferrers: { host: string; sessions: number }[];
+  topProducts: AnalyticsSlugCount[];
+  topCategories: AnalyticsSlugCount[];
+}
+
+export async function fetchAdminAnalytics(days: number): Promise<AnalyticsSummary> {
+  return request<AnalyticsSummary>(`/api/admin/analytics?days=${days}`);
 }

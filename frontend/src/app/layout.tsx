@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Epilogue, Manrope } from "next/font/google";
 import "@/styles/globals.css";
+import { ReducedMotionProvider } from "@/components/ui/ReducedMotionProvider";
 
 const epilogue = Epilogue({
   subsets: ["latin"],
@@ -30,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${epilogue.variable} ${manrope.variable}`}>
       <body className="font-body antialiased">
-        {children}
+        <ReducedMotionProvider>{children}</ReducedMotionProvider>
       </body>
     </html>
   );

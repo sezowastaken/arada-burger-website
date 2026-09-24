@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { TrackedLink } from "@/components/analytics/TrackedLink";
 
 const MAPS_URL =
   "https://www.google.com/maps/place/Arada+Burger/@36.8521682,28.2616038,17z/data=!3m1!4b1!4m6!3m5!1s0x14bfbd7d7ca72cd9:0x36f7c3ad6b1c9cc1!8m2!3d36.8521682!4d28.2641841!16s%2Fg%2F11lgqk9xtz?entry=ttu&g_ep=EgoyMDI2MDQwOC4wIKXMDSoASAFQAw%3D%3D";
@@ -17,6 +18,8 @@ export default async function LocationPage({
   if (lang !== "tr" && lang !== "en") {
     notFound();
   }
+
+  const validLang = lang as "tr" | "en";
 
   const isTR = lang === "tr";
 
@@ -83,7 +86,9 @@ export default async function LocationPage({
 
               {/* CTA artık daha net buton gibi */}
               <div className="mt-5 max-w-[560px] lg:mx-0 mx-auto">
-                <a
+                <TrackedLink
+                  lang={validLang}
+                  kind="directions"
                   href={MAPS_URL}
                   target="_blank"
                   rel="noreferrer"
@@ -115,7 +120,7 @@ export default async function LocationPage({
                         : "Open instantly in Google Maps app or browser."}
                     </div>
                   </div>
-                </a>
+                </TrackedLink>
               </div>
             </div>
 

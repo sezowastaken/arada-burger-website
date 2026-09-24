@@ -41,3 +41,5 @@ Thumbs.db
 
 # Docker (Şimdilik aktif değil ama ilerde lazım olur)
 .docker-compose.override.yml
+# Uploaded product images (served by the backend, stored in a Docker volume)
+backend/uploads/

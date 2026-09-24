@@ -23,4 +23,11 @@ export const env = {
   port: Number(process.env.PORT ?? 4000),
   databaseUrl: requireEnv("DATABASE_URL"),
   corsOrigin: process.env.CORS_ORIGIN ?? "http://localhost:3000",
+  // Where uploaded product images are written. Resolved against the backend
+  // package root so it lands in backend/uploads whether this runs from src/
+  // (tsx) or dist/ (container). In Docker this path is a named volume, so
+  // images survive image rebuilds.
+  uploadDir: process.env.UPLOAD_DIR
+    ? path.resolve(process.env.UPLOAD_DIR)
+    : path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../uploads"),
 };

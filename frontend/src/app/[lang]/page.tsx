@@ -246,10 +246,13 @@ export default async function Home({
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
+                {/* Three columns from xl for the same reason as the menu grid:
+                    below that the fixed-aspect card clips its description. */}
+                <div className="grid grid-cols-1 gap-10 md:grid-cols-2 xl:grid-cols-3">
                   {featuredProducts.map((item) => (
                     <ProductCard
                       key={item.slug}
+                      slug={item.slug}
                       imageSrc={item.image}
                       imageAlt={item.name[validLang]}
                       name={item.name[validLang]}

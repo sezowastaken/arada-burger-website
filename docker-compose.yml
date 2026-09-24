@@ -27,6 +27,10 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
     ports:
       - "${PORT:-4000}:${PORT:-4000}"
+    volumes:
+      # Uploaded product images live on the backend's disk, not in the git
+      # tree, so they must outlive image rebuilds.
+      - uploads_data:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -39,6 +43,9 @@ services:
         # Baked into the browser bundle at build time — used by /admin to
         # call the backend. See frontend/.env.example.
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
+        # Where `next build` points the /uploads image proxy. Inside the
+        # compose network the backend answers to its service name.
+        API_INTERNAL_URL: http://backend:4000
     restart: unless-stopped
     env_file: .env
     environment:
@@ -57,3 +64,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:

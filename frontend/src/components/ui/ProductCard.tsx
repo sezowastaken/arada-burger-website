@@ -1,8 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { trackProductClick } from "@/lib/analytics";
+import { ProductDetailModal } from "./ProductDetailModal";
 
 type ProductCardProps = {
+  /** Needed to report which product this is when the card is clicked. */
+  slug: string;
   imageSrc?: string;
   imageAlt: string;
   name: string;
@@ -31,6 +37,7 @@ const checkerStyle = {
 };
 
 export default function ProductCard({
+  slug,
   imageSrc = "",
   imageAlt,
   name,
@@ -41,10 +48,25 @@ export default function ProductCard({
   className = "",
 }: ProductCardProps) {
   const hasImage = Boolean(imageSrc && imageSrc.trim().length > 0);
+  const [open, setOpen] = useState(false);
+
+  // Derived rather than threaded down as a prop: ProductCard is rendered from
+  // Server Component pages (the homepage, the menu page), and neither needs
+  // to become a client component just to hand this down.
+  const pathname = usePathname();
+  const lang = pathname.startsWith("/en") ? "en" : "tr";
+  const closeLabel = lang === "tr" ? "Kapat" : "Close";
 
   return (
-    <article
-      className={`group relative flex aspect-[2/3] w-full max-w-[450px] flex-col overflow-hidden rounded-[48px] shadow-[6px_6px_20px_rgba(30,28,16,0.15)] transition-[transform,box-shadow] duration-500 ${
+    <>
+    <button
+      type="button"
+      aria-haspopup="dialog"
+      onClick={() => {
+        setOpen(true);
+        trackProductClick(pathname, lang, slug);
+      }}
+      className={`group relative flex aspect-[2/3] w-full max-w-[450px] flex-col overflow-hidden rounded-[48px] text-left shadow-[6px_6px_20px_rgba(30,28,16,0.15)] transition-[transform,box-shadow] duration-500 ${
         isAvailable
           ? "hover:-translate-y-2 hover:shadow-[12px_12px_32px_rgba(30,28,16,0.25)]"
           : ""
@@ -150,6 +172,21 @@ export default function ProductCard({
             'url("https://www.transparenttextures.com/patterns/stardust.png")',
         }}
       />
-    </article>
+    </button>
+
+    {open ? (
+      <ProductDetailModal
+        imageSrc={imageSrc}
+        imageAlt={imageAlt}
+        name={name}
+        price={price}
+        description={description}
+        isAvailable={isAvailable}
+        soldOutLabel={soldOutLabel}
+        closeLabel={closeLabel}
+        onClose={() => setOpen(false)}
+      />
+    ) : null}
+    </>
   );
 }

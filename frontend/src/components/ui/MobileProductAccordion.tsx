@@ -18,6 +18,8 @@ type MobileProductAccordionProps = {
   /** Required so a caller on the English site cannot silently fall back to Turkish. */
   soldOutLabel: string;
   className?: string;
+  /** Analytics hook: called once when the card is opened, not on every render. */
+  onOpen?: () => void;
 };
 
 /** Stamped ink over the product shot — no shadow, because ink is not a sticker. */
@@ -72,6 +74,7 @@ function MobileProductAccordion({
   isAvailable = true,
   soldOutLabel,
   className = "",
+  onOpen,
 }: MobileProductAccordionProps) {
   const [open, setOpen] = useState(false);
   const uid = useId();
@@ -136,7 +139,10 @@ function MobileProductAccordion({
           >
             <button
               type="button"
-              onClick={() => setOpen(true)}
+              onClick={() => {
+                setOpen(true);
+                onOpen?.();
+              }}
               aria-expanded={false}
               className="flex w-full items-center gap-x-5 p-4 text-left sm:p-5"
             >
@@ -145,7 +151,10 @@ function MobileProductAccordion({
                 layoutId={ids.imageWrapper}
                 transition={layoutTransition}
                 style={{ borderRadius: IMG_RADIUS_COMPACT }}
-                className="relative h-[104px] w-[140px] shrink-0 overflow-visible sm:h-[112px] sm:w-[150px]"
+                /* Narrower on a phone: at 375px the 140px image left the title
+                   column only 133px, too little for a word like HAMBURGER to
+                   fit on one line. */
+                className="relative h-[104px] w-[124px] shrink-0 overflow-visible max-[360px]:w-[104px] sm:h-[112px] sm:w-[150px]"
               >
                 <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: IMG_RADIUS_COMPACT }}>
                   <div className="absolute inset-0" style={starburstStyle} />
@@ -182,11 +191,21 @@ function MobileProductAccordion({
                   - Isim ile alttaki fiyat/ikon blogu arasindaki genel dikey mesafeyi
                     degistirmek istiyorsan bu wrapper'daki `gap-3` degerini degistir.
                 */}
+                {/*
+                  Turkish names are the constraint here, not English ones.
+                  `leading-[0.92]` under line-clamp's overflow:hidden sliced the
+                  dots off Ö and Ü — "GÖCEK" rendered as "GOCEK" — and a single
+                  long word like "MARMARİS" cannot wrap, so at a fixed 1.85rem
+                  it ran past the clamp and lost its last letters. The size now
+                  follows the viewport on small screens, the line box is tall
+                  enough for a diacritic, and anything longer breaks rather
+                  than being cut.
+                */}
                 <motion.h3
                   layoutId={ids.title}
                   transition={layoutTransition}
                   style={{ transformOrigin: "left center" }} // GPU ivmelenmeli smooth koruma
-                  className="line-clamp-2 pt-0.4 font-display text-[1.85rem] font-black uppercase leading-[0.92] tracking-tight text-on_surface sm:text-[2rem]"
+                  className="line-clamp-2 pt-[0.12em] font-display text-[clamp(1.1rem,5.6vw,1.85rem)] font-black uppercase leading-[1.05] tracking-tight text-on_surface [overflow-wrap:anywhere] max-[360px]:text-[4.9vw] sm:text-[2rem]"
                 >
                   {name}
                 </motion.h3>
@@ -283,7 +302,7 @@ function MobileProductAccordion({
                         layoutId={ids.title}
                         transition={layoutTransition}
                         style={{ transformOrigin: "left center" }} // Distorsiyonsuz GPU base typography scale 
-                        className="font-display text-[2rem] font-black uppercase leading-[0.95] tracking-tight text-on_surface sm:text-[2.2rem]"
+                        className="pt-[0.12em] font-display text-[clamp(1.5rem,7vw,2rem)] font-black uppercase leading-[1.05] tracking-tight text-on_surface [overflow-wrap:anywhere] sm:text-[2.2rem]"
                       >
                         {name}
                       </motion.h3>

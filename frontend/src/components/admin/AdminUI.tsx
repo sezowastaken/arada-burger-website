@@ -255,5 +255,20 @@ export const fieldLabelClass =
 
 export const fieldInputClass = `w-full rounded-[10px] border border-outline_variant bg-surface_container_lowest px-3 py-2 text-sm text-on_surface transition-[border-color,box-shadow] duration-150 placeholder:text-on_surface/35 hover:border-on_surface/25 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/25 disabled:opacity-50`;
 
+/**
+ * A field that failed validation keeps its own error next to it. One error
+ * notice at the foot of a form tells you something is wrong but not where,
+ * which is the part you actually need on a form this long.
+ */
+export const fieldInputErrorClass = "border-danger focus:border-danger focus:ring-danger/25";
+
+export function FieldError({ id, children }: { id: string; children: ReactNode }) {
+  return (
+    <p id={id} className="mt-1 text-[0.75rem] font-medium text-danger">
+      {children}
+    </p>
+  );
+}
+
 /** Prices and counts line up column to column instead of dancing. */
 export const tabularNums = "[font-variant-numeric:tabular-nums]";

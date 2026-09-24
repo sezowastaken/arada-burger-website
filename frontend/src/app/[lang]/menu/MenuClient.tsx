@@ -2,10 +2,12 @@
 
 import React, { useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import CategoryFilter from "@/components/ui/CategoryFilter";
 import ProductCard from "@/components/ui/ProductCard";
 import MobileProductAccordion from "@/components/ui/MobileProductAccordion";
 import { LayoutGroup } from "framer-motion";
+import { trackCategoryClick, trackProductClick } from "@/lib/analytics";
 
 interface MenuItem {
   id: string;
@@ -36,6 +38,12 @@ export default function MenuClient({
   const [activeCategory, setActiveCategory] = useState<string>("all");
 
   const contentTopRef = useRef<HTMLDivElement | null>(null);
+
+  // Derived rather than threaded down as a prop: every ancestor down to this
+  // component is a client component already, and adding a `lang` prop here
+  // would mean touching every page that renders <MenuClient>.
+  const pathname = usePathname();
+  const lang = pathname.startsWith("/en") ? "en" : "tr";
 
   const filterCategories = useMemo(
     () => [
@@ -182,6 +190,7 @@ export default function MenuClient({
 
   const handleCategoryClick = (id: string) => {
     setActiveCategory(id);
+    trackCategoryClick(pathname, lang, id);
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -305,17 +314,29 @@ export default function MenuClient({
                                 description={item.description}
                                 isAvailable={item.isAvailable}
                                 soldOutLabel={soldOutLabel}
+                                onOpen={() => trackProductClick(pathname, lang, item.id)}
                               />
                             ))}
                           </div>
                         </LayoutGroup>
                       </div>
 
-                      {/* Desktop Grid Layout - untouched in spirit */}
-                      <div className="mt-8 hidden grid-cols-1 gap-8 md:grid-cols-2 lg:grid lg:grid-cols-3 lg:gap-10">
+                      {/*
+                        Desktop Grid Layout.
+
+                        Three columns start at xl, not lg. The card is a fixed
+                        2:3 box with fixed-size type inside it, so it only holds
+                        its content above a certain width: three columns at
+                        1024px made each card 194px wide and sliced up to 82px
+                        off the bottom of the longer ingredient lists (Datça,
+                        Bozburun). Two columns there keep the card at ~311px,
+                        which measures as fitting with room to spare.
+                      */}
+                      <div className="mt-8 hidden grid-cols-1 gap-8 lg:grid lg:grid-cols-2 lg:gap-10 xl:grid-cols-3">
                         {category.items.map((item) => (
                           <ProductCard
                             key={item.id}
+                            slug={item.id}
                             imageSrc={item.image}
                             imageAlt={item.name}
                             name={item.name}

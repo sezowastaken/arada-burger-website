@@ -1,5 +1,5 @@
-import { PlaceholderPage } from "@/components/admin/PlaceholderPage";
+import { AnalyticsDashboard } from "@/components/admin/AnalyticsDashboard";
 
 export default function AdminAnalyticsPage() {
-  return <PlaceholderPage section="analytics" />;
+  return <AnalyticsDashboard />;
 }

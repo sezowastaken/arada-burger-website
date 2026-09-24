@@ -16,6 +16,11 @@ COPY . .
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
+# The /uploads rewrite destination is baked into the routes manifest by
+# `next build`, so it is a build arg rather than a runtime variable.
+ARG API_INTERNAL_URL
+ENV API_INTERNAL_URL=$API_INTERNAL_URL
+
 RUN npm run build
 
 FROM node:22-alpine AS runtime

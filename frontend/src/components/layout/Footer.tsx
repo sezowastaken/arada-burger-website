@@ -79,12 +79,21 @@ export default function Footer({ lang }: { lang: "tr" | "en" }) {
             © {currentYear} Arada Burger.{" "}
             {lang === "tr" ? "Tüm Hakları Saklıdır." : "All Rights Reserved."}
           </p>
-          <Link
-            href="/admin"
-            className="text-[10px] font-normal normal-case tracking-normal text-on_surface/40 opacity-70 transition-opacity hover:opacity-100 hover:underline"
-          >
-            {lang === "tr" ? "Personel Girişi" : "Staff Login"}
-          </Link>
+          <div className="flex items-center gap-3 text-[10px] font-normal normal-case tracking-normal text-on_surface/40">
+            <Link
+              href={`/${lang}/privacy`}
+              className="opacity-70 transition-opacity hover:opacity-100 hover:underline"
+            >
+              {lang === "tr" ? "Gizlilik" : "Privacy"}
+            </Link>
+            <span aria-hidden="true">·</span>
+            <Link
+              href="/admin"
+              className="opacity-70 transition-opacity hover:opacity-100 hover:underline"
+            >
+              {lang === "tr" ? "Personel Girişi" : "Staff Login"}
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

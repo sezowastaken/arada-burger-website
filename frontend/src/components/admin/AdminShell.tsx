@@ -103,7 +103,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }, [drawerOpen]);
 
   return (
-    <div className="min-h-screen bg-background text-on_surface">
+    /* Declared so Turkish uppercasing is correct (CSS uppercase maps i→İ only
+       under lang="tr") and so a screen reader speaks the right language. */
+    <div lang={lang} className="min-h-screen bg-background text-on_surface">
       {/* Desktop rail */}
       <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col bg-on_surface lg:flex">
         <SidebarWordmark />

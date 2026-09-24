@@ -24,6 +24,10 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY package.json ./
 COPY drizzle ./drizzle
+# Created here, owned by `node`, so the named volume Compose mounts over it
+# inherits that ownership. A root-owned mount point would make every upload
+# fail with EACCES once the process drops to `node`.
+RUN mkdir -p /app/uploads && chown -R node:node /app/uploads
 USER node
 EXPOSE 4000
 # Apply pending migrations, then start the server. Migrations are idempotent

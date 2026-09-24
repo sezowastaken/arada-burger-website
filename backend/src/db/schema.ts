@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { boolean, integer, numeric, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, index, integer, numeric, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 
 export const categories = pgTable("categories", {
   id: serial("id").primaryKey(),
@@ -57,5 +57,72 @@ export const productPriceHistoryRelations = relations(productPriceHistory, ({ on
   product: one(products, {
     fields: [productPriceHistory.productId],
     references: [products.id],
+  }),
+}));
+
+/**
+ * Analytics — a small first-party event log, not a Google Analytics clone.
+ *
+ * Privacy is designed in, not bolted on (see docs/product/roadmap.md M3):
+ * no IP address is ever stored, no raw User-Agent string is stored (only a
+ * device-type bucket computed in the browser), and `sessionToken` is a random
+ * value generated client-side with no link to any personal identity — there
+ * is no login system for it to attach to. `sessionToken` lives in
+ * `sessionStorage`, not a persistent cookie, so it does not survive the
+ * browser tab closing and cannot be used to profile a visitor across days.
+ */
+export const webSessions = pgTable(
+  "web_sessions",
+  {
+    id: serial("id").primaryKey(),
+    sessionToken: text("session_token").notNull().unique(),
+    deviceType: text("device_type").notNull(), // "mobile" | "tablet" | "desktop"
+    landingLang: text("landing_lang").notNull(), // "tr" | "en"
+    // Hostname only (e.g. "google.com"), never the full referrer URL — a full
+    // URL can carry query strings from the referring page that are not ours to
+    // store.
+    referrerHost: text("referrer_host"),
+    utmSource: text("utm_source"),
+    utmMedium: text("utm_medium"),
+    utmCampaign: text("utm_campaign"),
+    firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  // Dashboard queries bucket sessions by "new in the last N days".
+  (table) => [index("web_sessions_first_seen_at_idx").on(table.firstSeenAt)],
+);
+
+export const analyticsEvents = pgTable(
+  "analytics_events",
+  {
+    id: serial("id").primaryKey(),
+    sessionId: integer("session_id")
+      .notNull()
+      .references(() => webSessions.id),
+    // "page_view" | "menu_view" | "product_click" | "category_click" |
+    // "phone_click" | "directions_click" | "social_click"
+    eventType: text("event_type").notNull(),
+    path: text("path").notNull(),
+    lang: text("lang").notNull(),
+    productSlug: text("product_slug"),
+    categorySlug: text("category_slug"),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    // Every admin dashboard query filters by a recent date range, and most
+    // also filter by event_type within that range (top products, page views).
+    index("analytics_events_occurred_at_idx").on(table.occurredAt),
+    index("analytics_events_type_occurred_at_idx").on(table.eventType, table.occurredAt),
+  ],
+);
+
+export const webSessionsRelations = relations(webSessions, ({ many }) => ({
+  events: many(analyticsEvents),
+}));
+
+export const analyticsEventsRelations = relations(analyticsEvents, ({ one }) => ({
+  session: one(webSessions, {
+    fields: [analyticsEvents.sessionId],
+    references: [webSessions.id],
   }),
 }));
