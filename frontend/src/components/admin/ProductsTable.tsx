@@ -5,12 +5,14 @@ import {
   createProduct,
   fetchAdminCategories,
   fetchAdminProducts,
+  fetchInventoryItems,
   reorderProducts,
   setProductActive,
   setProductAvailable,
   updateProduct,
   type AdminCategory,
   type AdminProduct,
+  type InventoryItem,
   type ProductInput,
 } from "@/lib/api";
 import { useAdminLang } from "./AdminLanguageProvider";
@@ -29,13 +31,15 @@ import {
 } from "./AdminUI";
 import { PriceHistoryModal } from "./PriceHistoryModal";
 import { ProductFormModal } from "./ProductFormModal";
+import { RecipeModal } from "./RecipeModal";
 
 type LoadState = "loading" | "ready" | "error";
 type ModalState =
   | { mode: "closed" }
   | { mode: "create" }
   | { mode: "edit"; product: AdminProduct }
-  | { mode: "history"; product: AdminProduct };
+  | { mode: "history"; product: AdminProduct }
+  | { mode: "recipe"; product: AdminProduct };
 
 function moved<T>(items: T[], from: number, to: number): T[] {
   const next = [...items];
@@ -80,6 +84,7 @@ export function ProductsTable() {
   const { t, lang } = useAdminLang();
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [categories, setCategories] = useState<AdminCategory[]>([]);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [state, setState] = useState<LoadState>("loading");
   const [errorMessage, setErrorMessage] = useState("");
   const [actionError, setActionError] = useState("");
@@ -91,12 +96,14 @@ export function ProductsTable() {
   const [reordering, setReordering] = useState(false);
 
   const load = useCallback(async () => {
-    const [nextProducts, nextCategories] = await Promise.all([
+    const [nextProducts, nextCategories, nextInventoryItems] = await Promise.all([
       fetchAdminProducts(),
       fetchAdminCategories(),
+      fetchInventoryItems(),
     ]);
     setProducts(nextProducts);
     setCategories(nextCategories);
+    setInventoryItems(nextInventoryItems);
   }, []);
 
   useEffect(() => {
@@ -352,9 +359,12 @@ export function ProductsTable() {
                       <td className="px-4 py-3">{activeButton(product, pending)}</td>
                       <td className="px-4 py-3">{availableButton(product, pending)}</td>
                       <td className="px-4 py-3">
-                        <div className="flex justify-end gap-2">
+                        <div className="flex flex-wrap justify-end gap-2">
                           <Button size="sm" onClick={() => setModal({ mode: "history", product })}>
                             {t.products.history}
+                          </Button>
+                          <Button size="sm" onClick={() => setModal({ mode: "recipe", product })}>
+                            {t.products.recipe}
                           </Button>
                           <Button size="sm" onClick={() => setModal({ mode: "edit", product })}>
                             {t.products.edit}
@@ -396,13 +406,20 @@ export function ProductsTable() {
                     ) : null}
                   </div>
 
-                  <div className="mt-3 flex gap-2 border-t border-outline_variant pt-3">
+                  <div className="mt-3 flex flex-wrap gap-2 border-t border-outline_variant pt-3">
                     <Button
                       size="sm"
                       className="flex-1"
                       onClick={() => setModal({ mode: "history", product })}
                     >
                       {t.products.history}
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setModal({ mode: "recipe", product })}
+                    >
+                      {t.products.recipe}
                     </Button>
                     <Button
                       size="sm"
@@ -430,6 +447,14 @@ export function ProductsTable() {
 
       {modal.mode === "history" ? (
         <PriceHistoryModal product={modal.product} onClose={() => setModal({ mode: "closed" })} />
+      ) : null}
+
+      {modal.mode === "recipe" ? (
+        <RecipeModal
+          product={modal.product}
+          inventoryItems={inventoryItems}
+          onClose={() => setModal({ mode: "closed" })}
+        />
       ) : null}
     </div>
   );

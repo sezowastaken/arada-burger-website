@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "../db/client.js";
-import { categories, productPriceHistory, products } from "../db/schema.js";
+import { categories, inventoryItems, productPriceHistory, productRecipes, products } from "../db/schema.js";
 
 type ProductRow = typeof products.$inferSelect;
 type CategoryRow = typeof categories.$inferSelect;
@@ -657,6 +657,190 @@ export async function adminRoutes(app: FastifyInstance) {
       }
 
       return { product: serializeProduct(updated) };
+    },
+  );
+
+  /**
+   * Bill of materials for a product — which inventory items, and how much of
+   * each, one unit of the product consumes. Editing is unrestricted rows
+   * (add/update/remove) rather than a submit-the-whole-list reorder like
+   * categories/products: a recipe has no order to preserve, so there is
+   * nothing a partial update could leave stale.
+   */
+  app.get<{ Params: { id: number } }>(
+    "/products/:id/recipe",
+    {
+      schema: {
+        params: {
+          type: "object",
+          required: ["id"],
+          properties: { id: { type: "integer", minimum: 1 } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+
+      const product = await db.query.products.findFirst({ where: eq(products.id, id) });
+      if (!product) {
+        return reply.code(404).send({ error: `Product ${id} not found` });
+      }
+
+      const rows = await db
+        .select({ recipe: productRecipes, item: inventoryItems })
+        .from(productRecipes)
+        .innerJoin(inventoryItems, eq(productRecipes.inventoryItemId, inventoryItems.id))
+        .where(eq(productRecipes.productId, id))
+        .orderBy(asc(inventoryItems.name));
+
+      return {
+        productId: id,
+        recipe: rows.map((row) => ({
+          id: row.recipe.id,
+          inventoryItemId: row.item.id,
+          itemName: row.item.name,
+          unit: row.item.unit,
+          quantity: Number(row.recipe.quantity),
+        })),
+      };
+    },
+  );
+
+  app.post<{ Params: { id: number }; Body: { inventoryItemId: number; quantity: number } }>(
+    "/products/:id/recipe",
+    {
+      schema: {
+        params: {
+          type: "object",
+          required: ["id"],
+          properties: { id: { type: "integer", minimum: 1 } },
+        },
+        body: {
+          type: "object",
+          required: ["inventoryItemId", "quantity"],
+          additionalProperties: false,
+          properties: {
+            inventoryItemId: { type: "integer", minimum: 1 },
+            quantity: { type: "number", exclusiveMinimum: 0, maximum: 999999999 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+      const { inventoryItemId, quantity } = request.body;
+
+      const product = await db.query.products.findFirst({ where: eq(products.id, id) });
+      if (!product) {
+        return reply.code(404).send({ error: `Product ${id} not found` });
+      }
+
+      const item = await db.query.inventoryItems.findFirst({ where: eq(inventoryItems.id, inventoryItemId) });
+      if (!item) {
+        return reply.code(400).send({ error: `Inventory item ${inventoryItemId} does not exist` });
+      }
+
+      const existing = await db.query.productRecipes.findFirst({
+        where: and(eq(productRecipes.productId, id), eq(productRecipes.inventoryItemId, inventoryItemId)),
+      });
+      if (existing) {
+        return reply.code(400).send({ error: `${item.name} is already in this product's recipe` });
+      }
+
+      const [created] = await db
+        .insert(productRecipes)
+        .values({ productId: id, inventoryItemId, quantity: quantity.toString() })
+        .returning();
+
+      return reply.code(201).send({
+        row: {
+          id: created.id,
+          inventoryItemId: item.id,
+          itemName: item.name,
+          unit: item.unit,
+          quantity: Number(created.quantity),
+        },
+      });
+    },
+  );
+
+  app.patch<{ Params: { id: number; rowId: number }; Body: { quantity: number } }>(
+    "/products/:id/recipe/:rowId",
+    {
+      schema: {
+        params: {
+          type: "object",
+          required: ["id", "rowId"],
+          properties: {
+            id: { type: "integer", minimum: 1 },
+            rowId: { type: "integer", minimum: 1 },
+          },
+        },
+        body: {
+          type: "object",
+          required: ["quantity"],
+          additionalProperties: false,
+          properties: { quantity: { type: "number", exclusiveMinimum: 0, maximum: 999999999 } },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { id, rowId } = request.params;
+      const { quantity } = request.body;
+
+      const [updated] = await db
+        .update(productRecipes)
+        .set({ quantity: quantity.toString(), updatedAt: new Date() })
+        .where(and(eq(productRecipes.id, rowId), eq(productRecipes.productId, id)))
+        .returning();
+
+      if (!updated) {
+        return reply.code(404).send({ error: `Recipe row ${rowId} not found on product ${id}` });
+      }
+
+      const item = await db.query.inventoryItems.findFirst({
+        where: eq(inventoryItems.id, updated.inventoryItemId),
+      });
+
+      return {
+        row: {
+          id: updated.id,
+          inventoryItemId: updated.inventoryItemId,
+          itemName: item?.name ?? "",
+          unit: item?.unit ?? "",
+          quantity: Number(updated.quantity),
+        },
+      };
+    },
+  );
+
+  app.delete<{ Params: { id: number; rowId: number } }>(
+    "/products/:id/recipe/:rowId",
+    {
+      schema: {
+        params: {
+          type: "object",
+          required: ["id", "rowId"],
+          properties: {
+            id: { type: "integer", minimum: 1 },
+            rowId: { type: "integer", minimum: 1 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { id, rowId } = request.params;
+
+      const [deleted] = await db
+        .delete(productRecipes)
+        .where(and(eq(productRecipes.id, rowId), eq(productRecipes.productId, id)))
+        .returning({ id: productRecipes.id });
+
+      if (!deleted) {
+        return reply.code(404).send({ error: `Recipe row ${rowId} not found on product ${id}` });
+      }
+
+      return reply.code(204).send();
     },
   );
 }

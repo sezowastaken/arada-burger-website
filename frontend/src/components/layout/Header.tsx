@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useParams } from "next/navigation";
+import { useCart } from "@/lib/cart";
 
 const desktopNavLinks = [
   { href: "/menu", label: { tr: "Menü", en: "Menu" } },
@@ -20,6 +21,40 @@ const mobileNavLinks = [
   { href: "/location", label: { tr: "Konum", en: "Location" } },
   { href: "/about", label: { tr: "Hakkımızda", en: "About" } },
 ];
+
+function CartIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M6 8h12l-1.2 11.2a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8L6 8Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M9 8V6a3 3 0 0 1 6 0v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CartLink({ lang }: { lang: "tr" | "en" }) {
+  const { totalCount } = useCart();
+
+  return (
+    <Link
+      href={`/${lang}/cart`}
+      aria-label={lang === "tr" ? "Sepet" : "Cart"}
+      className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-on_surface transition-colors duration-200 hover:text-primary md:h-10 md:w-10"
+    >
+      <CartIcon />
+      {totalCount > 0 ? (
+        <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[0.625rem] font-black leading-none text-white [font-variant-numeric:tabular-nums]">
+          {totalCount > 99 ? "99+" : totalCount}
+        </span>
+      ) : null}
+    </Link>
+  );
+}
 
 export default function Header({ lang: initialLang }: { lang: "tr" | "en" }) {
   const pathname = usePathname();
@@ -91,6 +126,8 @@ export default function Header({ lang: initialLang }: { lang: "tr" | "en" }) {
 
           {/* Utilities */}
           <div className="flex items-center justify-end gap-3 md:gap-6">
+            <CartLink lang={lang} />
+
             <div className="flex items-center rounded-full border border-on_surface/10 bg-surface_container_highest/50 p-1 shadow-inner">
               <Link
                 href={getTogglePath("tr")}

@@ -4,10 +4,11 @@ import { useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { trackProductClick } from "@/lib/analytics";
+import { useCart } from "@/lib/cart";
 import { ProductDetailModal } from "./ProductDetailModal";
 
 type ProductCardProps = {
-  /** Needed to report which product this is when the card is clicked. */
+  /** Needed to report which product this is when the card is clicked, and to add it to the cart. */
   slug: string;
   imageSrc?: string;
   imageAlt: string;
@@ -49,6 +50,7 @@ export default function ProductCard({
 }: ProductCardProps) {
   const hasImage = Boolean(imageSrc && imageSrc.trim().length > 0);
   const [open, setOpen] = useState(false);
+  const { addItem } = useCart();
 
   // Derived rather than threaded down as a prop: ProductCard is rendered from
   // Server Component pages (the homepage, the menu page), and neither needs
@@ -56,6 +58,8 @@ export default function ProductCard({
   const pathname = usePathname();
   const lang = pathname.startsWith("/en") ? "en" : "tr";
   const closeLabel = lang === "tr" ? "Kapat" : "Close";
+  const addToCartLabel = lang === "tr" ? "Sepete Ekle" : "Add to Cart";
+  const addedToCartLabel = lang === "tr" ? "Eklendi ✓" : "Added ✓";
 
   return (
     <>
@@ -185,6 +189,9 @@ export default function ProductCard({
         soldOutLabel={soldOutLabel}
         closeLabel={closeLabel}
         onClose={() => setOpen(false)}
+        addToCartLabel={addToCartLabel}
+        addedToCartLabel={addedToCartLabel}
+        onAddToCart={() => addItem(slug)}
       />
     ) : null}
     </>

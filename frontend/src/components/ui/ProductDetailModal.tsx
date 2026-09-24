@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 
@@ -21,6 +21,9 @@ interface Props {
   soldOutLabel: string;
   closeLabel: string;
   onClose: () => void;
+  addToCartLabel: string;
+  addedToCartLabel: string;
+  onAddToCart: () => void;
 }
 
 /**
@@ -44,9 +47,19 @@ export function ProductDetailModal({
   soldOutLabel,
   closeLabel,
   onClose,
+  addToCartLabel,
+  addedToCartLabel,
+  onAddToCart,
 }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
   const hasImage = Boolean(imageSrc && imageSrc.trim().length > 0);
+  const [justAdded, setJustAdded] = useState(false);
+
+  function handleAddToCart() {
+    onAddToCart();
+    setJustAdded(true);
+    window.setTimeout(() => setJustAdded(false), 1500);
+  }
 
   useEffect(() => {
     const previouslyFocused = document.activeElement as HTMLElement | null;
@@ -186,6 +199,18 @@ export function ProductDetailModal({
           <p className="max-w-[52ch] font-[family:var(--font-manrope)] text-[0.9375rem] font-semibold leading-relaxed text-[#1e1c10]/80">
             {description}
           </p>
+
+          {isAvailable ? (
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              className={`mt-2 rounded-full px-8 py-3 font-[family:var(--font-epilogue)] text-sm font-black uppercase tracking-[0.14em] text-white shadow-[3px_3px_0px_rgba(30,28,16,0.2)] transition-[transform,background-color] duration-200 hover:-translate-y-0.5 active:translate-y-0 ${
+                justAdded ? "bg-[#3c7a3c]" : "bg-[#a60002] hover:bg-[#8c0002]"
+              }`}
+            >
+              {justAdded ? addedToCartLabel : addToCartLabel}
+            </button>
+          ) : null}
         </div>
       </div>
     </div>,

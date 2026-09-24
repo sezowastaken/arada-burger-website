@@ -1,0 +1,1 @@
+ALTER TABLE "inventory_items" ADD CONSTRAINT "inventory_items_name_unique" UNIQUE("name");

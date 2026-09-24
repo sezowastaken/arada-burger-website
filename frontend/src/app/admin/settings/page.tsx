@@ -1,5 +1,5 @@
-import { PlaceholderPage } from "@/components/admin/PlaceholderPage";
+import { SettingsForm } from "@/components/admin/SettingsForm";
 
 export default function AdminSettingsPage() {
-  return <PlaceholderPage section="settings" />;
+  return <SettingsForm />;
 }

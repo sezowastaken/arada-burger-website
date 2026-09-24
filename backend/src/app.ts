@@ -5,8 +5,12 @@ import Fastify from "fastify";
 import { mkdirSync } from "node:fs";
 import { env } from "./config/env.js";
 import { adminAnalyticsRoutes } from "./routes/adminAnalytics.js";
+import { adminInventoryRoutes } from "./routes/adminInventory.js";
+import { adminOrdersRoutes } from "./routes/adminOrders.js";
 import { adminRoutes } from "./routes/admin.js";
+import { adminSettingsRoutes } from "./routes/adminSettings.js";
 import { analyticsRoutes } from "./routes/analytics.js";
+import { checkoutRoutes } from "./routes/checkout.js";
 import { healthRoutes } from "./routes/health.js";
 import { menuRoutes } from "./routes/menu.js";
 import { MAX_IMAGE_BYTES, UPLOAD_URL_PREFIX, uploadRoutes } from "./routes/uploads.js";
@@ -21,10 +25,11 @@ export function buildApp() {
   });
 
   // @fastify/cors defaults to GET,HEAD,POST only — the admin UI also needs
-  // PATCH, otherwise the browser blocks it at the preflight.
+  // PATCH (edits) and DELETE (removing a recipe row), otherwise the browser
+  // blocks them at the preflight.
   app.register(cors, {
     origin: env.corsOrigin,
-    methods: ["GET", "HEAD", "POST", "PATCH"],
+    methods: ["GET", "HEAD", "POST", "PATCH", "DELETE"],
   });
   app.register(multipart, { limits: { fileSize: MAX_IMAGE_BYTES, files: 1 } });
 
@@ -50,9 +55,13 @@ export function buildApp() {
   app.register(healthRoutes);
   app.register(menuRoutes, { prefix: "/api" });
   app.register(analyticsRoutes, { prefix: "/api/relay" });
+  app.register(checkoutRoutes, { prefix: "/api" });
   app.register(adminRoutes, { prefix: "/api/admin" });
   app.register(uploadRoutes, { prefix: "/api/admin" });
   app.register(adminAnalyticsRoutes, { prefix: "/api/admin" });
+  app.register(adminInventoryRoutes, { prefix: "/api/admin" });
+  app.register(adminOrdersRoutes, { prefix: "/api/admin" });
+  app.register(adminSettingsRoutes, { prefix: "/api/admin" });
 
   return app;
 }

@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { db, pool } from "./client.js";
-import { categories, products } from "./schema.js";
+import { categories, inventoryItems, productRecipes, products, storeSettings } from "./schema.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -37,6 +37,189 @@ interface MenuJsonCategory {
 interface MenuJson {
   categories: MenuJsonCategory[];
 }
+
+/**
+ * The kitchen's known ingredient list — kept here rather than a JSON file
+ * since, unlike the menu, nothing on the frontend needs this data too.
+ * Seeded so these items are always present in a fresh database; re-running
+ * this script never touches one that already exists (see the insert-only
+ * note above, and inventoryItems.name's unique constraint).
+ */
+const FIXED_INVENTORY_ITEMS: { name: string; unit: string }[] = [
+  { name: "Hamburger ekmeği", unit: "adet" },
+  { name: "Patates kızartması", unit: "kg" },
+  { name: "Burger köftesi", unit: "adet" },
+  { name: "Tavuk", unit: "kg" },
+  { name: "Cheddar peyniri", unit: "adet" },
+  { name: "Marul", unit: "adet" },
+  { name: "Turşu relish", unit: "kg" },
+  { name: "Soğan halkası", unit: "kg" },
+  { name: "Dana frankfurter sosis", unit: "adet" },
+  { name: "Karamelize soğan", unit: "kg" },
+  { name: "Domates", unit: "dilim" },
+  { name: "Mantar", unit: "kg" },
+  { name: "Füme kaburga eti", unit: "dilim" },
+  { name: "Tütsülenmiş et", unit: "dilim" },
+  { name: "Köz patlıcan", unit: "kg" },
+  { name: "Köz biber", unit: "kg" },
+];
+
+/**
+ * Bill of materials, read off `menuData.json`'s own descriptions — product
+ * slug → {inventory item name, quantity in that item's own unit}.
+ *
+ * Deliberately incomplete: an ingredient mentioned in a description that has
+ * no match in FIXED_INVENTORY_ITEMS (sauces, spice blends, garnishes like
+ * "trüf mayo" or "mor soğan") is left out rather than forced onto the
+ * nearest item — tracking those would be micromanaging stock for things that
+ * don't move the needle. Same reasoning for the 8 drinks (no description to
+ * read from) and "İlave Kuru Et" (no "dried meat" item exists — "Tütsülenmiş
+ * et" is smoked, not dried, so mapping it there would just be wrong data).
+ * Quantities for weight/portion words the description doesn't give a number
+ * for (a "handful" of onion rings, a smear of caramelized onion) are the
+ * owner's own estimate, not measured — edit them from the Products page once
+ * real portions are known.
+ */
+const PRODUCT_RECIPES: Record<string, { item: string; quantity: number }[]> = {
+  "marmaris-burger": [
+    { item: "Hamburger ekmeği", quantity: 1 },
+    { item: "Burger köftesi", quantity: 1 },
+    { item: "Cheddar peyniri", quantity: 1 },
+    { item: "Turşu relish", quantity: 0.02 },
+    { item: "Marul", quantity: 2 },
+    { item: "Soğan halkası", quantity: 0.06 },
+    { item: "Patates kızartması", quantity: 0.15 },
+  ],
+  "datca-burger": [
+    { item: "Hamburger ekmeği", quantity: 1 },
+    { item: "Burger köftesi", quantity: 1 },
+    { item: "Cheddar peyniri", quantity: 1 },
+    { item: "Turşu relish", quantity: 0.02 },
+    { item: "Marul", quantity: 2 },
+    { item: "Soğan halkası", quantity: 0.06 },
+    { item: "Patates kızartması", quantity: 0.15 },
+  ],
+  "gocek-burger": [
+    { item: "Hamburger ekmeği", quantity: 1 },
+    { item: "Burger köftesi", quantity: 1 },
+    { item: "Cheddar peyniri", quantity: 1 },
+    { item: "Mantar", quantity: 0.03 },
+    { item: "Turşu relish", quantity: 0.02 },
+    { item: "Marul", quantity: 2 },
+    { item: "Soğan halkası", quantity: 0.06 },
+    { item: "Patates kızartması", quantity: 0.15 },
+  ],
+  "selimiye-burger": [
+    { item: "Hamburger ekmeği", quantity: 1 },
+    { item: "Burger köftesi", quantity: 1 },
+    { item: "Füme kaburga eti", quantity: 1 },
+    { item: "Turşu relish", quantity: 0.02 },
+    { item: "Marul", quantity: 3 },
+    { item: "Soğan halkası", quantity: 0.06 },
+    { item: "Patates kızartması", quantity: 0.15 },
+  ],
+  "bozburun-burger": [
+    { item: "Hamburger ekmeği", quantity: 1 },
+    { item: "Burger köftesi", quantity: 1 },
+    { item: "Cheddar peyniri", quantity: 1 },
+    { item: "Tütsülenmiş et", quantity: 1 },
+    { item: "Turşu relish", quantity: 0.02 },
+    { item: "Marul", quantity: 2 },
+    { item: "Soğan halkası", quantity: 0.06 },
+    { item: "Patates kızartması", quantity: 0.15 },
+  ],
+  "bayir-burger": [
+    { item: "Hamburger ekmeği", quantity: 1 },
+    { item: "Burger köftesi", quantity: 1 },
+    { item: "Cheddar peyniri", quantity: 1 },
+    { item: "Köz patlıcan", quantity: 0.03 },
+    { item: "Köz biber", quantity: 0.03 },
+    { item: "Karamelize soğan", quantity: 0.02 },
+    { item: "Marul", quantity: 2 },
+    { item: "Soğan halkası", quantity: 0.06 },
+    { item: "Patates kızartması", quantity: 0.15 },
+  ],
+  "islak-hamburger-tekli": [
+    { item: "Hamburger ekmeği", quantity: 1 },
+    { item: "Burger köftesi", quantity: 1 },
+  ],
+  "islak-hamburger-uclu": [
+    { item: "Hamburger ekmeği", quantity: 3 },
+    { item: "Burger köftesi", quantity: 3 },
+  ],
+  "islak-hamburger-besli": [
+    { item: "Hamburger ekmeği", quantity: 5 },
+    { item: "Burger köftesi", quantity: 5 },
+  ],
+  "sogut-burger": [
+    { item: "Hamburger ekmeği", quantity: 1 },
+    { item: "Tavuk", quantity: 0.12 },
+    { item: "Cheddar peyniri", quantity: 1 },
+    { item: "Domates", quantity: 1 },
+    { item: "Turşu relish", quantity: 0.02 },
+    { item: "Marul", quantity: 2 },
+    { item: "Soğan halkası", quantity: 0.06 },
+    { item: "Patates kızartması", quantity: 0.15 },
+  ],
+  "mimaras-burger": [
+    { item: "Hamburger ekmeği", quantity: 1 },
+    { item: "Tavuk", quantity: 0.12 },
+    { item: "Marul", quantity: 2 },
+    { item: "Turşu relish", quantity: 0.02 },
+    { item: "Patates kızartması", quantity: 0.15 },
+  ],
+  "knidos-burger": [
+    { item: "Hamburger ekmeği", quantity: 1 },
+    { item: "Tavuk", quantity: 0.12 },
+    { item: "Turşu relish", quantity: 0.02 },
+    { item: "Marul", quantity: 2 },
+    { item: "Patates kızartması", quantity: 0.15 },
+  ],
+  "kaunos-burger": [
+    { item: "Hamburger ekmeği", quantity: 1 },
+    { item: "Tavuk", quantity: 0.12 },
+    { item: "Karamelize soğan", quantity: 0.02 },
+    { item: "Cheddar peyniri", quantity: 1 },
+    { item: "Marul", quantity: 2 },
+    { item: "Turşu relish", quantity: 0.02 },
+    { item: "Patates kızartması", quantity: 0.15 },
+  ],
+  "kleopatra-burger": [
+    { item: "Hamburger ekmeği", quantity: 1 },
+    { item: "Tavuk", quantity: 0.12 },
+    { item: "Patates kızartması", quantity: 0.15 },
+  ],
+  "nimara-burger": [
+    { item: "Hamburger ekmeği", quantity: 1 },
+    { item: "Tavuk", quantity: 0.12 },
+    { item: "Cheddar peyniri", quantity: 2 },
+    { item: "Marul", quantity: 2 },
+    { item: "Patates kızartması", quantity: 0.15 },
+  ],
+  "turgut-hotdog": [
+    { item: "Dana frankfurter sosis", quantity: 1 },
+    { item: "Turşu relish", quantity: 0.02 },
+    { item: "Soğan halkası", quantity: 0.06 },
+    { item: "Patates kızartması", quantity: 0.15 },
+  ],
+  "aksaz-hotdog": [
+    { item: "Dana frankfurter sosis", quantity: 1 },
+    { item: "Karamelize soğan", quantity: 0.02 },
+    { item: "Soğan halkası", quantity: 0.06 },
+    { item: "Patates kızartması", quantity: 0.15 },
+  ],
+  "turunc-hotdog": [
+    { item: "Dana frankfurter sosis", quantity: 1 },
+    { item: "Soğan halkası", quantity: 0.06 },
+    { item: "Patates kızartması", quantity: 0.15 },
+  ],
+  "patates-kizartmasi": [{ item: "Patates kızartması", quantity: 0.3 }],
+  "ilave-fume-et": [{ item: "Füme kaburga eti", quantity: 1 }],
+  "sogan-halkasi": [
+    { item: "Soğan halkası", quantity: 0.15 },
+    { item: "Patates kızartması", quantity: 0.15 },
+  ],
+};
 
 async function seed() {
   const raw = await readFile(MENU_DATA_PATH, "utf-8");
@@ -84,8 +267,57 @@ async function seed() {
     .onConflictDoNothing({ target: products.slug })
     .returning({ id: products.id, slug: products.slug });
 
+  const insertedInventoryItems = await db
+    .insert(inventoryItems)
+    .values(FIXED_INVENTORY_ITEMS)
+    .onConflictDoNothing({ target: inventoryItems.name })
+    .returning({ id: inventoryItems.id, name: inventoryItems.name });
+
+  // Same reasoning as categoryIdBySlug above: read every id back rather than
+  // trusting the insert results, so a recipe row can still find its product
+  // and its ingredient on a re-run where nothing new was inserted.
+  const allProducts = await db.select({ id: products.id, slug: products.slug }).from(products);
+  const productIdBySlug = new Map(allProducts.map((p) => [p.slug, p.id]));
+
+  const allInventoryItems = await db
+    .select({ id: inventoryItems.id, name: inventoryItems.name })
+    .from(inventoryItems);
+  const inventoryItemIdByName = new Map(allInventoryItems.map((i) => [i.name, i.id]));
+
+  const recipeRows = Object.entries(PRODUCT_RECIPES).flatMap(([slug, ingredients]) => {
+    const productId = productIdBySlug.get(slug);
+    if (!productId) return [];
+
+    return ingredients.flatMap(({ item, quantity }) => {
+      const inventoryItemId = inventoryItemIdByName.get(item);
+      if (!inventoryItemId) return [];
+      return [{ productId, inventoryItemId, quantity: quantity.toString() }];
+    });
+  });
+
+  const insertedRecipeRows =
+    recipeRows.length === 0
+      ? []
+      : await db
+          .insert(productRecipes)
+          .values(recipeRows)
+          .onConflictDoNothing({ target: [productRecipes.productId, productRecipes.inventoryItemId] })
+          .returning({ id: productRecipes.id });
+
+  // Singleton row (id 1) — onConflictDoNothing so re-running this never
+  // resets an owner-edited delivery fee / minimum order / accepting-orders
+  // flag back to the default.
+  const insertedSettings = await db
+    .insert(storeSettings)
+    .values({ id: 1 })
+    .onConflictDoNothing({ target: storeSettings.id })
+    .returning({ id: storeSettings.id });
+
   console.log(
-    `Seeded ${insertedCategories.length} new categories and ${insertedProducts.length} new products from ${MENU_DATA_PATH}. ` +
+    `Seeded ${insertedCategories.length} new categories and ${insertedProducts.length} new products from ${MENU_DATA_PATH}, ` +
+      `${insertedInventoryItems.length} new inventory items from the fixed starter list, ` +
+      `${insertedRecipeRows.length} new recipe rows read off the menu descriptions, ` +
+      `and ${insertedSettings.length ? "the default" : "no new"} store settings row. ` +
       "Existing rows were left untouched.",
   );
 }

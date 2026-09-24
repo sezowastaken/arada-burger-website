@@ -1,4 +1,5 @@
 import fallbackMenu from "@/constants/menuData.json";
+import type { InventoryUnit } from "./inventoryUnits";
 
 // Browser-facing origin: the published port on the host.
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
@@ -174,6 +175,26 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json();
 }
 
+/** Like `request`, but for a 204 No Content response — calling `res.json()` on an empty body throws. */
+async function requestVoid(path: string, init?: RequestInit): Promise<void> {
+  const res = await fetch(`${API_URL}${path}`, {
+    cache: "no-store",
+    headers: init?.body ? { "Content-Type": "application/json" } : undefined,
+    ...init,
+  });
+
+  if (!res.ok) {
+    let detail = `${res.status} ${res.statusText}`;
+    try {
+      const body = await res.json();
+      detail = body?.message || body?.error || detail;
+    } catch {
+      // non-JSON body — keep the status text
+    }
+    throw new Error(detail);
+  }
+}
+
 export async function fetchAdminCategories(): Promise<AdminCategory[]> {
   const data = await request<{ categories: AdminCategory[] }>("/api/admin/categories");
   return data.categories;
@@ -330,4 +351,261 @@ export interface AnalyticsSummary {
 
 export async function fetchAdminAnalytics(days: number): Promise<AnalyticsSummary> {
   return request<AnalyticsSummary>(`/api/admin/analytics?days=${days}`);
+}
+
+/* ---------------------------------------------------------------------------
+ * Admin inventory — M4. Current stock is never sent as a raw column value;
+ * it is always the backend's SUM over the movement ledger, so the UI can
+ * trust it without knowing how it was computed.
+ * ------------------------------------------------------------------------ */
+
+export interface InventoryItem {
+  id: number;
+  name: string;
+  unit: InventoryUnit;
+  /** How the item is bought, when coarser than its tracked `unit` — e.g. "baş", paired with purchaseUnitFactor. */
+  purchaseUnitLabel: string | null;
+  /** How many `unit`s one purchaseUnitLabel is — e.g. 20 leaves per head of lettuce. Always paired with the label. */
+  purchaseUnitFactor: number | null;
+  lowStockThreshold: number | null;
+  isActive: boolean;
+  stock: number;
+  lowStock: boolean;
+}
+
+export interface InventoryItemInput {
+  name: string;
+  unit: InventoryUnit;
+  purchaseUnitLabel: string | null;
+  purchaseUnitFactor: number | null;
+  lowStockThreshold: number | null;
+}
+
+export interface InventoryPurchaseEntry {
+  id: number;
+  itemId: number;
+  quantity: number;
+  unitCost: number | null;
+  totalCost: number | null;
+  note: string | null;
+  purchasedAt: string;
+}
+
+export interface InventoryWasteEntry {
+  id: number;
+  itemId: number;
+  quantity: number;
+  reason: string;
+  note: string | null;
+  occurredAt: string;
+}
+
+export interface InventoryMovementEntry {
+  id: string;
+  type: "purchase" | "waste";
+  quantity: number;
+  unitCost: number | null;
+  totalCost: number | null;
+  reason: string | null;
+  note: string | null;
+  occurredAt: string;
+}
+
+export async function fetchInventoryItems(): Promise<InventoryItem[]> {
+  const data = await request<{ items: InventoryItem[] }>("/api/admin/inventory/items");
+  return data.items;
+}
+
+export async function createInventoryItem(input: InventoryItemInput): Promise<InventoryItem> {
+  const data = await request<{ item: InventoryItem }>("/api/admin/inventory/items", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return data.item;
+}
+
+export async function updateInventoryItem(
+  id: number,
+  input: Partial<InventoryItemInput> & { isActive?: boolean },
+): Promise<InventoryItem> {
+  const data = await request<{ item: InventoryItem }>(`/api/admin/inventory/items/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(input),
+  });
+  return data.item;
+}
+
+export async function createInventoryPurchase(input: {
+  itemId: number;
+  quantity: number;
+  unitCost?: number;
+  note?: string;
+}): Promise<InventoryPurchaseEntry> {
+  const data = await request<{ purchase: InventoryPurchaseEntry }>("/api/admin/inventory/purchases", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return data.purchase;
+}
+
+export async function createInventoryWaste(input: {
+  itemId: number;
+  quantity: number;
+  reason: string;
+  note?: string;
+}): Promise<InventoryWasteEntry> {
+  const data = await request<{ waste: InventoryWasteEntry }>("/api/admin/inventory/waste", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return data.waste;
+}
+
+export async function fetchInventoryMovements(itemId: number): Promise<InventoryMovementEntry[]> {
+  const data = await request<{ entries: InventoryMovementEntry[] }>(
+    `/api/admin/inventory/items/${itemId}/movements`,
+  );
+  return data.entries;
+}
+
+/* ---------------------------------------------------------------------------
+ * Product recipes (bill of materials) — how much of each inventory item one
+ * unit of a product consumes. Built ahead of M5 so the mapping already
+ * exists once orders can trigger an automatic stock deduction.
+ * ------------------------------------------------------------------------ */
+
+export interface RecipeRow {
+  id: number;
+  inventoryItemId: number;
+  itemName: string;
+  unit: string;
+  quantity: number;
+}
+
+export async function fetchProductRecipe(productId: number): Promise<RecipeRow[]> {
+  const data = await request<{ recipe: RecipeRow[] }>(`/api/admin/products/${productId}/recipe`);
+  return data.recipe;
+}
+
+export async function addRecipeRow(
+  productId: number,
+  input: { inventoryItemId: number; quantity: number },
+): Promise<RecipeRow> {
+  const data = await request<{ row: RecipeRow }>(`/api/admin/products/${productId}/recipe`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return data.row;
+}
+
+export async function updateRecipeRow(productId: number, rowId: number, quantity: number): Promise<RecipeRow> {
+  const data = await request<{ row: RecipeRow }>(`/api/admin/products/${productId}/recipe/${rowId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ quantity }),
+  });
+  return data.row;
+}
+
+export async function deleteRecipeRow(productId: number, rowId: number): Promise<void> {
+  await requestVoid(`/api/admin/products/${productId}/recipe/${rowId}`, { method: "DELETE" });
+}
+
+/* ---------------------------------------------------------------------------
+ * Orders / checkout — M5. The cart itself lives client-side only (see
+ * lib/cart.tsx); these calls are what turns it into a real order.
+ * ------------------------------------------------------------------------ */
+
+export interface StoreSettings {
+  deliveryFee: number;
+  minOrderAmount: number;
+  acceptingOrders: boolean;
+}
+
+export async function fetchStoreSettings(): Promise<StoreSettings> {
+  return request<StoreSettings>("/api/store-settings");
+}
+
+export interface CheckoutInput {
+  lang: "tr" | "en";
+  items: { slug: string; quantity: number }[];
+  customer: { name: string; phone: string; email?: string };
+  address: { district: string; addressLine: string; deliveryNote?: string };
+}
+
+export interface CheckoutResult {
+  checkoutUrl: string;
+  orderToken: string;
+}
+
+export async function submitCheckout(input: CheckoutInput): Promise<CheckoutResult> {
+  return request<CheckoutResult>("/api/checkout", { method: "POST", body: JSON.stringify(input) });
+}
+
+export interface PublicOrder {
+  orderNumber: string;
+  token: string;
+  status: string;
+  customerName: string;
+  customerPhone: string;
+  address: { city: string; district: string; addressLine: string; deliveryNote: string | null } | null;
+  items: { name: LocalizedText; unitPrice: number; quantity: number; lineTotal: number }[];
+  subtotal: number;
+  deliveryFee: number;
+  discount: number;
+  total: number;
+  createdAt: string;
+}
+
+export async function fetchOrder(token: string): Promise<PublicOrder> {
+  return request<PublicOrder>(`/api/orders/${token}`);
+}
+
+/* ---------------------------------------------------------------------------
+ * Admin orders and store settings — M5, unauthenticated for now like the
+ * rest of the admin API.
+ * ------------------------------------------------------------------------ */
+
+export interface AdminOrderSummary {
+  id: number;
+  orderNumber: string;
+  source: string;
+  status: string;
+  customerName: string;
+  total: number;
+  createdAt: string;
+}
+
+export async function fetchAdminOrders(): Promise<AdminOrderSummary[]> {
+  const data = await request<{ orders: AdminOrderSummary[] }>("/api/admin/orders");
+  return data.orders;
+}
+
+export interface AdminOrderDetail extends AdminOrderSummary {
+  token: string;
+  customerPhone: string;
+  customerEmail: string | null;
+  customerNote: string | null;
+  address: { city: string; district: string; addressLine: string; deliveryNote: string | null } | null;
+  items: { name: LocalizedText; unitPrice: number; quantity: number; lineTotal: number }[];
+  subtotal: number;
+  deliveryFee: number;
+  discount: number;
+  payments: { provider: string; providerPaymentId: string | null; status: string; amount: number; createdAt: string }[];
+  statusHistory: { status: string; note: string | null; changedAt: string }[];
+}
+
+export async function fetchAdminOrder(id: number): Promise<AdminOrderDetail> {
+  return request<AdminOrderDetail>(`/api/admin/orders/${id}`);
+}
+
+export async function setAdminOrderStatus(id: number, status: string, note?: string): Promise<{ id: number; status: string }> {
+  return request(`/api/admin/orders/${id}/status`, { method: "PATCH", body: JSON.stringify({ status, note }) });
+}
+
+export async function fetchAdminSettings(): Promise<StoreSettings> {
+  return request<StoreSettings>("/api/admin/settings");
+}
+
+export async function updateAdminSettings(input: Partial<StoreSettings>): Promise<StoreSettings> {
+  return request<StoreSettings>("/api/admin/settings", { method: "PATCH", body: JSON.stringify(input) });
 }

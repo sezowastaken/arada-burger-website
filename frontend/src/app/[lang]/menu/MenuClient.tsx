@@ -64,6 +64,8 @@ export default function MenuClient({
     const isTurkish = allLabel === "TÜMÜ";
 
   const soldOutLabel = isTurkish ? "TÜKENDİ" : "SOLD OUT";
+  const addToCartLabel = isTurkish ? "Sepete Ekle" : "Add to Cart";
+  const addedToCartLabel = isTurkish ? "Eklendi ✓" : "Added ✓";
 
   /**
    * Mascots and compact labels are keyed by the database category slug. A
@@ -307,6 +309,7 @@ export default function MenuClient({
                             {category.items.map((item) => (
                               <MobileProductAccordion
                                 key={item.id}
+                                slug={item.id}
                                 imageSrc={item.image}
                                 imageAlt={item.name}
                                 name={item.name}
@@ -314,6 +317,8 @@ export default function MenuClient({
                                 description={item.description}
                                 isAvailable={item.isAvailable}
                                 soldOutLabel={soldOutLabel}
+                                addToCartLabel={addToCartLabel}
+                                addedToCartLabel={addedToCartLabel}
                                 onOpen={() => trackProductClick(pathname, lang, item.id)}
                               />
                             ))}

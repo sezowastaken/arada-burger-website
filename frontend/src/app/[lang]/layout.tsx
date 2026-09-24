@@ -1,6 +1,7 @@
 import Header from "../../components/layout/Header";
 import Footer from "../../components/layout/Footer";
 import { AnalyticsBeacon } from "@/components/analytics/AnalyticsBeacon";
+import { CartProvider } from "@/lib/cart";
 import { notFound } from "next/navigation";
 
 const locales = ["tr", "en"];
@@ -37,12 +38,14 @@ export default async function LangLayout({
       layout and cannot see this segment's params.
     */
     <div lang={validLang}>
-      <AnalyticsBeacon lang={validLang} />
-      <Header lang={validLang} />
-      <main className="min-h-screen pt-24 md:pt-28">
-        {children}
-      </main>
-      <Footer lang={validLang} />
+      <CartProvider>
+        <AnalyticsBeacon lang={validLang} />
+        <Header lang={validLang} />
+        <main className="min-h-screen pt-24 md:pt-28">
+          {children}
+        </main>
+        <Footer lang={validLang} />
+      </CartProvider>
     </div>
   );
 }

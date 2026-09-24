@@ -7,8 +7,11 @@ import {
   motion,
   type Transition,
 } from "framer-motion";
+import { useCart } from "@/lib/cart";
 
 type MobileProductAccordionProps = {
+  /** Needed to add this product to the cart. */
+  slug: string;
   imageSrc?: string;
   imageAlt: string;
   name: string;
@@ -17,6 +20,8 @@ type MobileProductAccordionProps = {
   isAvailable?: boolean;
   /** Required so a caller on the English site cannot silently fall back to Turkish. */
   soldOutLabel: string;
+  addToCartLabel: string;
+  addedToCartLabel: string;
   className?: string;
   /** Analytics hook: called once when the card is opened, not on every render. */
   onOpen?: () => void;
@@ -66,6 +71,7 @@ const starburstStyle = {
 };
 
 function MobileProductAccordion({
+  slug,
   imageSrc = "",
   imageAlt,
   name,
@@ -73,11 +79,21 @@ function MobileProductAccordion({
   description,
   isAvailable = true,
   soldOutLabel,
+  addToCartLabel,
+  addedToCartLabel,
   className = "",
   onOpen,
 }: MobileProductAccordionProps) {
   const [open, setOpen] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
   const uid = useId();
+  const { addItem } = useCart();
+
+  function handleAddToCart() {
+    addItem(slug);
+    setJustAdded(true);
+    window.setTimeout(() => setJustAdded(false), 1500);
+  }
 
   // Mustard is the promotional colour in this system; a product that cannot be
   // bought should not keep signalling with it.
@@ -260,14 +276,17 @@ function MobileProductAccordion({
               }}
               className="relative w-full max-w-[420px] overflow-hidden border border-on_surface/10 bg-background/95 backdrop-blur-md"
             >
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                aria-expanded={true}
-                className="block w-full text-left"
-              >
-                <div className="flex flex-col gap-4 p-5 sm:p-6">
-
+              <div className="flex flex-col gap-4 p-5 sm:p-6">
+                {/* Only the image/title/price/chevron collapse the card —
+                    the description and "add to cart" button below are
+                    siblings of this button, not nested inside it, so tapping
+                    "add to cart" doesn't also trigger the collapse. */}
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  aria-expanded={true}
+                  className="block w-full text-left"
+                >
                   {/* IMAGE WRAPPER (Expanded) */}
                   <motion.div
                     layoutId={ids.imageWrapper}
@@ -329,25 +348,38 @@ function MobileProductAccordion({
                       </motion.span>
                     </div>
                   </div>
+                </button>
 
-                  {/* DESCRIPTION & SEPARATOR */}
-                  {/* Animasyondan hemen sonra belirmesi için delay ve çok hızlı (duration: 0.05) exit stratejisi */}
-                  {/* Exit hızlı olmazsa "ExpandedContainer" kapanırken daralma sırasında içeriğin taşmasına ve stutter kasmasına yol açar */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, transition: { duration: 0.05 } }}
-                    transition={{ delay: 0.15, duration: 0.2 }}
-                  >
-                    <div className="h-[10px] w-full opacity-95" style={checkerStyle} />
-                    <div className="mb-1 mt-4 rounded-[1.5rem] bg-surface_container_highest/85 p-4">
-                      <p className="font-[family:var(--font-manrope)] text-[1rem] font-bold leading-relaxed text-on_surface/80">
-                        {description}
-                      </p>
-                    </div>
-                  </motion.div>
-                </div>
-              </button>
+                {/* DESCRIPTION, SEPARATOR & ADD TO CART — siblings of the
+                    collapse button above, not nested inside it. */}
+                {/* Animasyondan hemen sonra belirmesi için delay ve çok hızlı (duration: 0.05) exit stratejisi */}
+                {/* Exit hızlı olmazsa "ExpandedContainer" kapanırken daralma sırasında içeriğin taşmasına ve stutter kasmasına yol açar */}
+                <motion.div
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, transition: { duration: 0.05 } }}
+                  transition={{ delay: 0.15, duration: 0.2 }}
+                >
+                  <div className="h-[10px] w-full opacity-95" style={checkerStyle} />
+                  <div className="mb-1 mt-4 rounded-[1.5rem] bg-surface_container_highest/85 p-4">
+                    <p className="font-[family:var(--font-manrope)] text-[1rem] font-bold leading-relaxed text-on_surface/80">
+                      {description}
+                    </p>
+                  </div>
+
+                  {isAvailable ? (
+                    <button
+                      type="button"
+                      onClick={handleAddToCart}
+                      className={`mt-1 w-full rounded-[1.25rem] px-5 py-3.5 text-center font-display text-sm font-black uppercase tracking-[0.12em] text-white shadow-[3px_3px_0px_rgba(30,28,16,0.2)] transition-[background-color] duration-200 ${
+                        justAdded ? "bg-[#3c7a3c]" : "bg-primary hover:bg-[#8c0002]"
+                      }`}
+                    >
+                      {justAdded ? addedToCartLabel : addToCartLabel}
+                    </button>
+                  ) : null}
+                </motion.div>
+              </div>
             </motion.article>
           </div>
         )}

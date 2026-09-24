@@ -1,5 +1,5 @@
-import { PlaceholderPage } from "@/components/admin/PlaceholderPage";
+import { InventoryTable } from "@/components/admin/InventoryTable";
 
 export default function AdminInventoryPage() {
-  return <PlaceholderPage section="inventory" />;
+  return <InventoryTable />;
 }

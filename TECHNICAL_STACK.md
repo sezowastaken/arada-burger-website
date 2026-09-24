@@ -133,6 +133,16 @@ npm run db:studio     # inspect
 Always read the generated SQL before applying it — check `onDelete`
 behaviour, indexes and constraints rather than trusting the diff blindly.
 
+### Visual annotation for AI coding agents
+
+[Agentation](https://www.agentation.com/) (`agentation` in `frontend/`,
+dev-only) adds a bottom-right toolbar in `npm run dev`: click an element,
+leave a note, copy structured output (selector, source file, component tree)
+straight into a prompt. Mounted from `DevAgentation.tsx` in the root layout,
+behind a build-time `NODE_ENV === "development"` check via `next/dynamic` —
+the package is never fetched by a production bundle, and nothing needs
+disabling before a real deploy.
+
 ### Conventions
 
 - Follow the patterns already in `frontend/src/components/` and

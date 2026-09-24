@@ -249,58 +249,332 @@ panel reporting "Disabled" does not mean nothing else is filtering.
 
 ---
 
-## M4 — Inventory, purchases and waste
+## M4 — Inventory, purchases and waste (done)
 
 *Goal: track what is bought and what is thrown away. Records are entered
 whenever shopping actually happens — there is no weekly cycle.*
 
 **Schema**
-- [ ] `inventory_items`
-- [ ] `inventory_purchases`
-- [ ] `inventory_movements`
-- [ ] `waste_records`
+- [x] `inventory_items` — name (unique, so the seed below can re-run safely),
+      unit, optional low-stock threshold, active flag. `unit` is plain
+      `text` in the column, but constrained to a fixed set (`kg`, `gram`,
+      `litre`, `adet`, `dilim`, `paket`) by both the admin's unit field
+      (a `<select>`, not free text) and the API's own JSON-schema `enum` —
+      a typo'd unit ("Kg" vs "kg") used to be able to silently split one
+      ingredient's stock across two rows that never summed together.
+      Two more optional columns, `purchaseUnitLabel` + `purchaseUnitFactor`,
+      cover the case where an item is *bought* in a coarser unit than it's
+      *tracked* in — see "Purchase-unit conversion" below.
+- [x] `inventory_purchases` — quantity, optional unit/total cost, optional
+      note, server-clock timestamp.
+- [x] `waste_records` — quantity, reason, optional note, server-clock
+      timestamp.
+- [x] `inventory_movements` — a signed ledger (+delta for a purchase, -delta
+      for waste). Current stock is never a stored column on
+      `inventory_items`; it is always `SUM(delta)` over this table, computed
+      at read time. A stored running total would drift the moment a write
+      missed updating it — a ledger cannot drift, because nothing needs to
+      stay in sync with it. A purchase/waste row and the movement it produces
+      are written in one transaction, so the audit trail (why) and the ledger
+      (how much) can never desync.
 
-**Admin**
-- [ ] Define an ingredient/item
-- [ ] "Add stock" entry: automatic date, quantity + unit + cost
-- [ ] Waste entry with reason/note
-- [ ] Current stock view
-- [ ] Low-stock indicator
+**Admin (`/admin/inventory`)**
+- [x] Define an ingredient/item, edit name/unit/low-stock threshold, and
+      deactivate one (hides it from new stock/waste/recipe entry, same
+      soft-delete pattern as categories/products — rows are never physically
+      deleted so purchase/waste/recipe history survives).
+- [x] "Add stock" entry: automatic (server) date, quantity + optional unit
+      cost, optional note.
+- [x] Waste entry with reason + optional note.
+- [x] Current stock view, per item, computed from the movement ledger.
+- [x] Low-stock indicator — a mustard "Az stok" badge when stock is below the
+      item's own threshold (items without a threshold never show it).
+- [x] Movement history per item: a merged, most-recent-first timeline of its
+      purchases and waste records.
+- [x] A fixed starter list of 16 real kitchen items (bun, patty, cheddar,
+      lettuce, pickle relish, onion rings, frankfurter, caramelized onion,
+      tomato, mushroom, smoked rib meat, smoked meat, roasted eggplant,
+      roasted pepper, chicken, fries), seeded in `db:seed` — insert-only, so
+      they're guaranteed present in any environment and a re-run never
+      duplicates or resets one an owner has since edited.
+
+**Purchase-unit conversion.** Some items are *bought* in a coarser unit than
+they're *tracked and used in* — a head of lettuce yields ~20 leaves, a whole
+tomato yields ~6 slices — and forcing the stock unit to match the purchase
+unit would make recipes report in heads-of-lettuce-per-burger, which is
+useless. An item can now optionally define `purchaseUnitLabel` +
+`purchaseUnitFactor` (e.g. "baş", 20) — both or neither, no dangling half. The
+"Add stock" form, when an item defines this, shows a small toggle to enter
+the purchase either in the item's own unit or in the purchase unit, with a
+live "= 60 adet" preview; only the converted, already-in-the-item's-own-unit
+number is ever sent to the API and written to the ledger — recipes, stock
+and movements never know a purchase unit exists. Unit cost converts the same
+way (cost per purchase unit ÷ factor = cost per stock unit), so total spend
+is unchanged either way.
+
+**Bill of materials — pulled forward from M9, ahead of schedule.** The user
+asked mid-milestone for a way to define which inventory items (and how much
+of each) go into a product, specifically so M5's automatic stock deduction on
+order completion has something to deduct against. Added as `product_recipes`
+(`productId`, `inventoryItemId`, `quantity`, unique per pair) with full CRUD
+from a "Recipe" modal on the Products page (add ingredient + quantity, edit
+quantity inline, remove a row) — deliberately a separate modal from
+`ProductFormModal` rather than folded into it, since editing a recipe only
+makes sense for a product that already exists. Quantity is entered in the
+ingredient's own unit. **Only the mapping is built here** — nothing consumes
+it yet. Automatic deduction needs `order_items` to exist, which is M5's job;
+M4's work is what makes that a lookup instead of a new mechanism when M5
+arrives.
+
+Every product's recipe is seeded too, read straight off `menuData.json`'s own
+descriptions (`db:seed`, insert-only, same as the menu itself) — about 100
+rows across 21 products. Deliberately incomplete in two directions: an
+ingredient the description mentions that has no match among the 16 starter
+items (a sauce, a spice blend, a garnish like "mor soğan") is left out rather
+than forced onto the nearest item or turned into a new inventory row —
+tracking those would be micromanaging stock for things that don't move the
+needle. And "İlave Kuru Et" (Extra Dried Meat) gets no recipe row at all:
+none of the 16 items is actually dried meat ("Tütsülenmiş et" is smoked, a
+different product), so a forced mapping would just be wrong data — add a
+real "Kuru et" item first if this one needs tracking. Quantities are the
+owner's own estimate where the description gives no number (a "handful" of
+onion rings, a smear of caramelized onion), not measured; edit them from the
+Products page once real portions are known.
+
+**Found during the recipe modal's own build, not a pre-existing pattern:** a
+row's fixed-width quantity input used `w-24` appended after a shared
+`fieldInputClass` that already bakes in `w-full`. Both are "width" utilities
+at equal specificity, so Tailwind's fixed utility-generation order (not the
+order they're written in the `className` string) decided which one won —
+`w-full` did, so the input stretched to fill the row's flex space and pushed
+the ingredient's name to a genuine 0px. Fixed by wrapping the input in a
+`w-24` div instead of trying to override the width on the input itself —
+matching how the "add ingredient" quantity field next to it already did it.
 
 ---
 
-## M5 — YepPos integration and sales/orders
+## M5 — Ordering, payment infrastructure and YepPos (in progress)
 
-*Blocked: starts once YepPos provides technical details.*
+*Guiding principle, carried through every piece of this milestone: **Arada
+owns orders, products, payments and operational data; YepPos, iyzico, PayTR
+and any other external system are adapters around that core, never the core
+itself.** Concretely: nothing in `orders`/`order_items`/`order_payments`
+knows what iyzico or YepPos looks like, and none of it changes if either is
+swapped out later.*
 
-Build our own source-agnostic model first, so YepPos is just one input:
+The milestone splits into two tracks that run in parallel, because most of
+it doesn't have to wait on the other:
 
-**Schema**
-- [ ] `orders`, `order_items`, `order_payments`, `order_sources`
-- [ ] `customers` (only if needed)
-- [ ] `integration_sync_logs`
+**Track A — things only the business owner can move forward** (a payment
+provider contract, the YepPos technical conversation, legal/fiscal
+confirmations — see the working notes below for the exact question list for
+each). Nothing here is code, and none of it is blocking Track B.
 
-Standard order sources — `WEBSITE` is included from day one so our own online
-ordering can be added later without a migration:
+**Track B — provider-independent technical core**, buildable now regardless
+of where Track A stands: our own order domain, a payment-provider interface,
+checkout, cart, and the admin surface to see and progress orders. This is
+what this session actually built.
+
+### Track A — working notes (for the owner, not code)
+
+**YepPos technical conversation** — needs to answer, in both directions:
+- YepPos → Arada: can we pull Yemeksepeti/Trendyol/phone/table orders? Source,
+  items, quantity, modifiers, price, discount, payment type? Order status
+  changes? Cancellations/refunds? A webhook for new orders, or only polling?
+  Bulk historical import?
+- Arada → YepPos: can we push our own web orders in as a distinct `WEBSITE`
+  source, marked "paid online"? Does that flow into the kitchen/adisyon
+  system and generate a fiscal receipt automatically? Does the existing Hızır
+  courier integration pick up a web order the same way? Auth model, sandbox,
+  and whether API access carries its own cost.
+- Also needed: a mali müşavir-confirmed answer to "which payment
+  type/operation do we send a pre-paid web order to YepPos as, so the fiscal
+  record comes out right?" — not an engineering decision.
+
+**Payment provider** — get hosted-checkout proposals from iyzico and PayTR
+(the two named candidates), asking specifically about: commission rate, any
+flat per-transaction fee, payout timing, 3D Secure, hosted checkout, webhook
+support, sandbox, refunds (full and partial), chargeback process, contract
+length/minimum volume, and installment terms if needed. See the API research
+below — it's now done regardless of which one is picked, since the
+`PaymentProvider` interface doesn't care which adapter implements it.
+
+**Legal/operational, before checkout goes live for real customers:**
+business/ETBİS status for online sales, updated KVKK/privacy text, mesafeli
+satış (distance-selling) pre-contract terms, cancellation policy, minimum
+order amount, delivery zones and fee, order-acceptance hours, which products
+are actually deliverable online. Most of these are just `store_settings`
+values or copy once decided — the settings screen (below) already has a
+place for the numeric ones.
+
+**Hızır courier** stays out of scope entirely: `Arada web order → YepPos →
+Hızır` is the whole plan, since Hızır is already reachable through YepPos's
+existing integration. No direct Hızır API work is planned.
+
+### Track B — what's built
+
+**Order domain (provider-independent)**
+- [x] `orders` — `publicToken` (unguessable, not the serial id — the
+      customer-facing order page is keyed on this so one order number isn't
+      a browse-away from the next customer's name/phone/address),
+      `source` (`WEBSITE` today; `TABLE`/`PHONE`/`YEMEKSEPETI`/`TRENDYOL`/
+      `GETIR`/`MIGROS`/`OTHER` reserved so a YepPos import lands in the same
+      table with no migration), `status` (the full lifecycle below),
+      customer contact, and subtotal/deliveryFee/discount/total —
+      always computed server-side at checkout, never trusted from the client.
+- [x] `order_items` — a snapshot (name, unit price) at order time, not a
+      live read off `products`; a later rename or price change must never
+      reach back and rewrite what a past order says it was.
+- [x] `order_addresses` — one row per order (delivery is the only mode this
+      milestone builds), scoped to Marmaris, shaped so a saved-address-per-
+      customer feature (M9) doesn't need a schema change later.
+- [x] `order_status_history` — every transition appended, never overwritten,
+      so "when did this actually get marked ready" survives past the
+      current state.
+- [x] `order_payments` — a payment *attempt*, separate from the order's own
+      status, since an order can accumulate more than one (a failed try,
+      then a successful retry) — this is where a provider's own reference id
+      and raw response live.
+- [x] `store_settings` — a singleton row (delivery fee, minimum order,
+      accepting-orders toggle) rather than env vars: "sipariş kabulü
+      açık/kapalı" is exactly the kind of thing an owner flips mid-shift, not
+      something that should need a redeploy. Live in the admin `/admin/settings`
+      page.
+
+**Status lifecycle** (order and payment state interleaved, matching the plan
+above):
 
 ```text
-TABLE
-PHONE
-YEMEKSEPETI
-TRENDYOL
-GETIR
-MIGROS
-WEBSITE   ← later
+PENDING_PAYMENT → PAID → CONFIRMED → PREPARING → READY → ON_THE_WAY → DELIVERED
+                     ↘ PAYMENT_FAILED
+                                         CANCELLED / REFUND_PENDING / REFUNDED / PARTIALLY_REFUNDED
 ```
 
-**Then the integration (read-only one-way if at all possible)**
-- [ ] YepPos API + auth
-- [ ] Historical order import
-- [ ] Sync new/changed orders
-- [ ] Cancellations and refunds
-- [ ] Payment type, channel
-- [ ] Map YepPos items to our `products`
-- [ ] Duplicate-order protection
+No adjacency is enforced on admin status changes (nothing stops jumping
+PREPARING → DELIVERED directly) — the kitchen may need to skip a step the UI
+modeled, and a hard state machine that occasionally has to be overridden
+anyway is worse than one that trusts the person running the shift. The one
+transition that *is* strict: `PAID` is only ever set from a verified payment
+result, never from a bare redirect — "the customer's browser came back" is
+not the same claim as "the provider confirms this was paid," and only the
+second one is trusted (see Payment provider below).
+
+**Payment provider abstraction** (`backend/src/payments/`)
+- [x] A provider-agnostic `PaymentProvider` interface — `createCheckout`,
+      `verifyReturn`, `getPaymentStatus`, `refund` — shaped around iyzico's
+      Checkout Form on purpose, since it needs far more buyer/address detail
+      than PayTR does; a PayTR adapter later only has to ignore fields it
+      doesn't need, not add new ones to the checkout form.
+- [x] `ManualProvider` — the default (`PAYMENT_PROVIDER` unset or
+      `manual`) until a real contract exists. Its "checkout URL" is a
+      backend route that immediately confirms and redirects back — enough
+      to build and test the entire order lifecycle (checkout → "payment" →
+      confirm → PAID → admin sees it) without waiting on any sandbox access.
+- [x] `IyzicoProvider`, using the official `iyzipay` npm SDK (no TypeScript
+      types exist for it — see `src/types/iyzipay.d.ts` — so this leans on
+      iyzico's own maintained request-signing rather than a hand-rolled
+      HMAC no one here can verify against a live account). Built from the
+      Checkout Form API researched directly from iyzico's docs and the SDK's
+      own source/tests: initialize request shape, the `paymentPageUrl`
+      redirect, and — the part that actually matters for correctness — the
+      response-signature algorithm (`HMAC-SHA256` over specific fields
+      joined by `:`, with iyzico's own trailing-zero price normalization
+      before hashing). **Untested against a real account**: register a free
+      sandbox at sandbox-merchant.iyzipay.com, set `IYZICO_API_KEY` /
+      `IYZICO_SECRET_KEY` / `IYZICO_URI`, `PAYMENT_PROVIDER=iyzico`, and run
+      a full checkout with a published test card before trusting this live.
+      One known gap, flagged in the code: iyzico's Checkout Form requires a
+      TCKN (`identityNumber`) even for guest checkout, which this sends as
+      the placeholder `11111111111` rather than asking a burger customer for
+      their national ID — a workaround, not an officially documented one;
+      confirm the right approach with iyzico once there's a real account.
+- [ ] `PayTRProvider` — not built. Fully researched though (endpoint,
+      request/callback field shapes, the *different* field order between the
+      two, integer-kuruş vs. decimal-string amount formats depending on the
+      endpoint, and that PayTR's sandbox requires an existing merchant
+      account — there is no way to test this one before signing, unlike
+      iyzico). Add it once a provider is chosen; the interface above already
+      doesn't care which.
+- [ ] The real asynchronous webhook/IPN path (iyzico's `X-IYZ-SIGNATURE-V3`
+      notification, separate from the browser-redirect-then-retrieve flow
+      this milestone uses) — not wired up. It needs a callback URL
+      registered in iyzico's merchant dashboard, which doesn't exist yet;
+      the redirect+retrieve flow that's built is sufficient for correctness
+      today (see the PAID-transition note above) but is the single point of
+      failure if a customer never gets redirected back. Worth adding once a
+      real account exists.
+
+**Checkout flow**
+- [x] `POST /api/checkout` — re-reads every product from the database (never
+      trusts a client-supplied price or slug), rejects anything inactive or
+      unavailable, checks `store_settings.acceptingOrders` and
+      `minOrderAmount`, computes delivery fee and total server-side, creates
+      the order + items + address in one transaction, then asks the active
+      provider for a checkout session.
+- [x] `POST /api/payments/confirm` — the single place a `PENDING_PAYMENT`
+      order is ever resolved to `PAID` or `PAYMENT_FAILED`, called by the
+      frontend's `/payment/return` handler regardless of which provider was
+      used. Idempotent — a customer refreshing that page, or a provider
+      redirecting the browser back twice, doesn't double-process.
+- [x] `GET /api/orders/:token` — public, token-gated order lookup for the
+      confirmation page.
+- [x] `GET /api/store-settings` — public, deliberately outside `/api/admin`
+      so the checkout page keeps working once auth lands on the admin API
+      (M7).
+
+**Cart and customer-facing pages**
+- [x] Cart is client-side only (`lib/cart.tsx`, `localStorage`) and stores
+      *only* `{slug, quantity}` — never a price or name. Every price shown
+      anywhere is re-resolved from a fresh menu fetch at render time, the
+      same "never trust a stored/client price" rule the checkout endpoint
+      itself enforces server-side; a product renamed, repriced, or taken off
+      the menu since it was added just falls out of the join instead of
+      needing its own stale-data handling.
+- [x] "Sepete Ekle" on both the desktop `ProductDetailModal` and the mobile
+      `MobileProductAccordion`'s expanded view (not on the collapsed
+      card/tile — that still just opens the detail view, same as before;
+      adding a second tap target there would have meant nesting a button
+      inside the existing card-opens-modal button).
+- [x] Cart icon + item-count badge in the header, visible on both mobile and
+      desktop.
+- [x] `/[lang]/cart` — line items, quantity steppers, subtotal.
+- [x] `/[lang]/checkout` — customer name/phone/email, Marmaris delivery
+      address (district + open address — no zone/fee lookup, a single flat
+      delivery fee from `store_settings`), order summary, minimum-order and
+      accepting-orders guards.
+- [x] `/[lang]/payment/return` — not a page, a route handler: the literal
+      URL a provider redirects the customer's browser to (iyzico sends this
+      as a form POST carrying just a `token`; the dev-only `ManualProvider`
+      as a plain GET). Its only job is calling `/api/payments/confirm`
+      server-side, then forwarding to the real confirmation page. Rebuilds
+      its own redirect origin from the request's `Host` header rather than
+      Next's `request.url` — inside the standalone Docker build the latter
+      resolves to the container's own hostname, not the address the
+      browser actually used, which sent the very first end-to-end test
+      straight into the Docker network and nowhere the browser could follow.
+- [x] `/[lang]/order/[token]` — the persistent order-status page (status
+      banner, items, total, delivery address); the id in the URL is the
+      unguessable token, not the sequential order id.
+
+**Admin**
+- [x] `/admin/orders` — list (order #, source, customer, total, status,
+      date) and a detail view (items, address, payments, status history,
+      a manual status-advance control). No filters yet (Today/Source/Status
+      from the original sketch) — the list is short enough for now that
+      scanning it is enough; add filters once order volume makes that untrue.
+- [x] `/admin/settings` — delivery fee, minimum order amount, accepting-
+      orders toggle, replacing the placeholder.
+- [ ] Refund/cancellation UI — the schema (`order_payments.status`,
+      `REFUND_PENDING`/`REFUNDED`/`PARTIALLY_REFUNDED` in the status list) is
+      ready for it; no admin action triggers a real `provider.refund()` call
+      yet.
+
+**Not started**: the YepPos adapter itself (`importOrders`/`sendOrder`/
+`syncOrderStatus`), `integration_sync_logs` (the retry/reconciliation table
+for "YepPos was down for 30 seconds, don't lose the order"), and the admin
+dashboard/KPI layer that reads across orders + M3 analytics + M4 inventory —
+that's M6, and explicitly stated there as not making sense until this
+milestone is feeding it real data.
 
 ---
 
@@ -381,13 +655,18 @@ PostgreSQL            → not exposed to the internet
 
 Post-MVP, in no particular order:
 
-- Recipe system: one burger → grams of each ingredient
-- Theoretical stock deduction from sales
+- Theoretical stock deduction from sales — the recipe system itself
+  (`product_recipes`, M4) and `order_items` (M5) both now exist; what's left
+  is the order-triggered write against the inventory ledger on a successful
+  order, which no code currently does.
 - Theoretical vs. actual stock variance
 - CSV/PDF reports
 - Meta Ads and Instagram/post performance data
 - Customer history / loyalty
-- Our own online ordering: cart, payment, `WEBSITE` order source
+- Cart, checkout and the `WEBSITE` order source moved to M5, built ahead of
+  schedule; still here for M9: saved customer profiles/addresses across
+  orders, and a real payment provider actually going live (M5 only built the
+  infrastructure — see M5's Track A).
 - Campaigns and coupons
 
 ---
@@ -398,7 +677,11 @@ Post-MVP, in no particular order:
 done:             M1  public menu → DB
 done:             M2  menu management complete
 done:             M3  analytics / data collection
-now:              M4  inventory / purchases / waste
-when YepPos answers:  M5 orders → M6 dashboard/KPI
+done:             M4  inventory / purchases / waste
+now:              M5  ordering / payment infra / YepPos — technical core
+                      built (order domain, cart, checkout, admin orders);
+                      YepPos adapter and a real payment provider both wait
+                      on Track A (owner's own conversations — see M5)
+when M5's Track A lands: M6 dashboard/KPI
 before going live:    M7 auth → M8 VPS
 ```
