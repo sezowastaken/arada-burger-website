@@ -86,6 +86,32 @@
           "image": "/menu/products/Bayır_Burger.png"
         },
         {
+          "id": "golenye-smash-burger",
+          "name": {
+            "tr": "Gölenye Smash Burger",
+            "en": "Gölenye Smash Burger"
+          },
+          "price": 540,
+          "description": {
+            "tr": "150 gr burger eti, cheddar peyniri, karamelize soğan, kesme turşu, burger sos ve barbekü sos. Yanında 150 gr kajun baharatlı patates kızartması ve soğan halkası ile servis edilir.",
+            "en": "150 g burger patty, cheddar cheese, caramelized onion, sliced pickles, burger sauce and barbecue sauce. Served with 150 g cajun-seasoned fries and onion rings."
+          },
+          "image": "/menu/products/Gölenye_Smash_Burger.png"
+        },
+        {
+          "id": "amos-smash-burger",
+          "name": {
+            "tr": "Amos Smash Burger",
+            "en": "Amos Smash Burger"
+          },
+          "price": 540,
+          "description": {
+            "tr": "150 gr burger eti, cheddar peyniri, karamelize soğan, turşu, trüflü mayonez ve acı sos. Yanında 150 gr kajun baharatlı patates kızartması ve soğan halkası ile servis edilir.",
+            "en": "150 g burger patty, cheddar cheese, caramelized onion, pickles, truffle mayonnaise and hot sauce. Served with 150 g cajun-seasoned fries and onion rings."
+          },
+          "image": "/menu/products/Amos_Smash_Burger.png"
+        },
+        {
           "id": "islak-hamburger-tekli",
           "name": {
             "tr": "Islak Hamburger",
@@ -144,7 +170,7 @@
             "tr": "Çıtır tavuk burger, cheddar peyniri, özel happy sos, domates, turşu, iceberg marul. (2 soğan halkası, kajun patates)",
             "en": "Crispy chicken burger, cheddar cheese, special happy sauce, tomato, pickles, iceberg lettuce. (2 onion rings, cajun fries)"
           },
-          "image": "/menu/products/Söğüt_Burger.png"
+          "image": "/menu/products/Söğüt_Burger_Kolasız.png"
         },
         {
           "id": "mimaras-burger",
